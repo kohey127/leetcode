@@ -26,7 +26,9 @@ function search(nums: number[], target: number): number {
     let right = nums.length - 1;
     
     while (left <= right) {
-        let mid = Math.floor(nums.length / 2);
+        // prepare for overflow
+        const mid = left + Math.floor((right - left) / 2)
+        // const mid = Math.floor((left + right) / 2);
 
         if (nums[mid] === target) {
             // Found the target;
