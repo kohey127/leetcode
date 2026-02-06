@@ -33,8 +33,8 @@ function isValid(s: string): boolean {
     for (const char of s) {
         if (char in pairs) {
             // Its a closing bracket
-            if (stack.length > 0 && pairs[char] === stack.pop()) {
-                return true;
+            if (stack.length === 0 || pairs[char] !== stack.pop()) {
+                return false;
             }
         } else {
             // Its a opening bracket
