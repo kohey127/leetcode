@@ -31,4 +31,26 @@
 // - s consists only of printable ASCII characters
 
 function isPalindrome(s: string): boolean {
+    let left = 0;
+    let right = s.length - 1;
+
+    const isAlphanumeric = (s: string): boolean => {
+        return /[a-zA-Z0-9]/.test(s);
+    }
+
+    while (left < right) {
+        // skip non-alphanumeric left
+        while (left < right && !isAlphanumeric(s[left])) {
+            left++;
+        }
+        // skip non-alphanumeric right
+        while (left < right && !isAlphanumeric(s[right])) {
+            right--;
+        }
+        if (s[left].toLocaleLowerCase() !== s[right].toLocaleLowerCase()) return false;
+        
+        left++;
+        right--;
+    }
+    return true;
 }
