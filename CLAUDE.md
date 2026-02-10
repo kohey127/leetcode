@@ -64,6 +64,17 @@ Q&A形式でパターンの使い分けを説明
 
 `BinarySearch/BinarySearch_solution.md` を参照。
 
+## Explanation Style Guidelines
+
+When explaining code or algorithms (in conversation, not in solution files):
+
+- **Visualize over verbalize**: Use ASCII diagrams and figures instead of long text. Show ranges, pointer movements, and comparisons visually.
+- **Less is more**: Remove every sentence that doesn't add understanding. If a diagram already explains it, don't repeat it in words.
+- **Concrete examples first**: Always start with a specific, small example (5-6 elements) before stating general rules. Never explain abstract logic without a concrete case.
+- **Middle-school friendly**: Assume no programming background. Use real-world analogies (e.g., weight scale, people in a line) to build intuition before showing code.
+- **One concept at a time**: Don't mix the main algorithm with edge-case handling. Explain the core idea first, then layer on details like duplicate skipping.
+- **Show, don't tell "why"**: Instead of saying "this works because X", show two cases side by side — one that works and one that doesn't — so the reader sees why themselves.
+
 ## ファイル構成
 
 ```
