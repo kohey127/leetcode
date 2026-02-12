@@ -33,28 +33,30 @@
 // - -10^5 <= nums[i] <= 10^5
 
 function threeSum(nums: number[]): number[][] {
-    nums.sort((a,b) => a - b);
+    nums.sort((a, b) => a - b);
     const result: number[][] = [];
 
     for (let i = 0; i < nums.length - 2; i++) {
-        // skip duplicate for the fixed element
-        if (i > 0 && nums[i] === nums[i - 1]) continue;
-
-        // Early termination: if nums[i] > 0, no valid triplet possible
-        if (nums[i] > 0) break;
-
         let left = i + 1;
         let right = nums.length - 1;
+
+        // if the smallest of the three is positive, sum can never be 0
+        if (nums[i] > 0) break;
+
+        // skip duplicate i values
+        // while also works but skips one extra index (while advances i, then for's i++ advances again).
+        // The result is the same since the skipped value is always a duplicate, but continue is more readable.
+        // while (nums[i] === nums[i - 1]) i++;
+        if (i > 0 && nums[i] === nums[i - 1]) continue;
 
         while (left < right) {
             const sum = nums[i] + nums[left] + nums[right];
 
             if (sum === 0) {
                 result.push([nums[i], nums[left], nums[right]]);
-                // skip duplicates
+                // skip duplicate left and right values
                 while (left < right && nums[left] === nums[left + 1]) left++;
                 while (left < right && nums[right] === nums[right - 1]) right--;
-
                 left++;
                 right--;
             } else if (sum < 0) {
