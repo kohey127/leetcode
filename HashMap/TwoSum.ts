@@ -37,6 +37,7 @@ function twoSum(nums: number[], target: number): number[] {
         if (map.has(complement)) {
             return [map.get(complement)!, i];
         }
+        map.set(nums[i], i);
     }
     return [];
 }
