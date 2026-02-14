@@ -27,13 +27,20 @@
 // - s consists of English letters, digits, symbols, and spaces
 
 function lengthOfLongestSubstring(s: string): number {
-    // let left = 0;
-    // let maxCount = 1;
-    // for (let right = 1; right < s.length; right++) {
-    //     if (s[left] !== s[right]) {
-    //         maxCount++;
-    //     } else {
-    //         left++;
-    //     }
-    // }
+    const seen = new Set<string>();
+    let left = 0;
+    let maxLen = 0;
+
+    for (let right = 0; right < s.length; right++) {
+        // Increase left by one until unduplicated character
+        while (seen.has(s[right])) {
+            seen.delete(s[left]);
+            left++;
+        }
+
+        seen.add(s[right]);
+        const currentWindowLen = right - left + 1;
+        maxLen = Math.max(maxLen, currentWindowLen);
+    }
+    return maxLen;
 }
