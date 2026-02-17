@@ -2,6 +2,13 @@
 
 北米技術面接に向けたアルゴリズム学習リポジトリ。
 
+## 英語のルール（最重要）
+
+- **超簡単な英語だけ使う。** 難しい単語は覚えられないし、時間の無駄。
+- 中学英語レベルで書く。"utilize" → "use"、"traverse" → "go through"、"subsequently" → "then"
+- 短い文で書く。1文は15語以下を目指す。
+- 面接フレーズも、丸暗記しやすいシンプルな文にする。
+
 ## 解説ファイル生成ルール
 
 問題の解説ファイル（`*_solution.md`）を作成する際は、以下のセクション構成でMarkdownファイルとして作成すること。
@@ -77,8 +84,21 @@ When explaining code or algorithms (in conversation, not in solution files):
 
 ## ファイル構成
 
+テーマ別ディレクトリの中に問題ファイルと解説ファイルを配置する。
+
 ```
-[ProblemName]/
-├── [ProblemName].ts           # 問題 - 自分で解く用
-└── [ProblemName]_solution.md  # 解説 - 学習・復習用（Markdown）
+[テーマ名]/
+├── [Problem1].ts              # 問題 - 自分で解く用
+├── [Problem1]_solution.md     # 解説 - 学習・復習用（Markdown）
+├── [Problem2].ts
+└── [Problem2]_solution.md
+```
+
+例:
+```
+BinarySearch/
+├── BinarySearch.ts
+├── BinarySearch_solution.md
+├── KokoEatingBananas.ts
+└── KokoEatingBananas_solution.md
 ```
