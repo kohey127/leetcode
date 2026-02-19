@@ -171,7 +171,37 @@ console.log("Test 8:", checkValidString("*"));
 // Expected: true
 ```
 
-## 9. WHY "RANGE" WORKS
+## 9. REAL-WORLD ANALOGY (バスの乗降)
+
+**バスが停留所を順番に回る。最後に乗客を0人にできるか？**
+
+```
+(  = 1人乗ってくる（確定）
+)  = 1人降りる（確定）
+*  = 乗るかもしれない、降りるかもしれない、誰も来ないかもしれない
+
+min = 最少で何人乗ってるか
+max = 最多で何人乗ってるか
+```
+
+**Example: `(*))`**
+
+```
+停留所1 '(' → 乗客: 1〜1人    1人乗ってきた
+停留所2 '*' → 乗客: 0〜2人    乗るかも、降りるかも、来ないかも
+停留所3 ')' → 乗客: 0〜1人    1人降りた
+停留所4 ')' → 乗客: 0〜0人    1人降りた → 0人にできる! ✓
+```
+
+**ルールがそのまま対応する:**
+
+| Algorithm | Bus |
+|---|---|
+| `max < 0` → return false | 最良でも乗客がマイナス = 誰も乗ってないのに降りろと言ってる。無理 |
+| `min < 0` → reset to 0 | 乗客がマイナスはありえない。その選び方をしないだけ |
+| `min === 0` at the end | 全員降ろせるパターンがある = valid |
+
+## 10. WHY "RANGE" WORKS (なぜ範囲追跡で解けるのか)
 
 The key idea is: **we don't need to know what each `*` becomes — we just need to know if a valid assignment exists.**
 
@@ -200,7 +230,7 @@ If low <= 0 <= high → 0 is reachable → valid
 (We keep low >= 0, so just check low == 0)
 ```
 
-## 10. ALTERNATIVE: TWO-PASS APPROACH
+## 11. ALTERNATIVE: TWO-PASS APPROACH
 
 Another way to think about this:
 
@@ -231,7 +261,7 @@ function checkValidString(s: string): boolean {
 
 Both are O(n) time, O(1) space.
 
-## 11. COMMON INTERVIEW QUESTIONS
+## 12. COMMON INTERVIEW QUESTIONS
 
 **Q: Why not just count `(` and `)` and see if they match?**
 A: Order matters. `)(` has equal counts but is invalid. We need to check left-to-right.
@@ -245,14 +275,14 @@ A: `high` is the maximum possible open count — even if every `*` becomes `(`. 
 **Q: Is this greedy?**
 A: Yes. We greedily track the range instead of trying all possibilities. The range always stays correct because `low` and `high` move in predictable ways.
 
-## 12. RELATED PROBLEMS
+## 13. RELATED PROBLEMS
 
 - LeetCode 20. Valid Parentheses (basic version, no `*`)
 - LeetCode 32. Longest Valid Parentheses
 - LeetCode 921. Minimum Add to Make Parentheses Valid
 - LeetCode 1249. Minimum Remove to Make Valid Parentheses
 
-## 13. HOW TO READ CODE ALOUD (口頭での読み方)
+## 14. HOW TO READ CODE ALOUD (口頭での読み方)
 
 **Key variables:**
 - `low` → "low" (minimum possible open count)
