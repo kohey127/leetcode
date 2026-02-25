@@ -32,5 +32,17 @@ class ListNode {
 }
 
 function reverseList(head: ListNode | null): ListNode | null {
-    // TODO: solve this
+    let prev: ListNode | null = null;
+    let cur: ListNode | null = head;
+
+    while (cur !== null) {
+        // save cur next
+        const next = cur.next; // 2 → 3
+        // reverse the arrow
+        cur.next = prev; // null → 1
+        prev = cur // 1 → 3
+        cur = next; // 2 → 3
+    }
+
+    return prev;
 }
