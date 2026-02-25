@@ -1,29 +1,80 @@
-# LeetCode 167. Two Sum II - Input Array Is Sorted
+# LeetCode 167. Two Sum II - Input Array Is Sorted (Medium)
 
 https://leetcode.com/problems/two-sum-ii-input-array-is-sorted/
 
-## 1. PROBLEM UNDERSTANDING
+## U - Understand（問題の理解）
 
 - **What**: Find two numbers in a sorted array that add up to a target
 - **Input**: A sorted integer array `numbers` and an integer `target`
 - **Output**: 1-indexed positions of the two numbers as `[index1, index2]`
-- **Constraints**:
-  - 2 <= numbers.length <= 3 * 10^4
-  - -1000 <= numbers[i] <= 1000
-  - Array is sorted in non-decreasing order
-  - Exactly one solution exists
-  - Must use constant extra space
-- **Key insight**: The array is already sorted, so two pointers from both ends can find the pair in one pass.
 
-## 2. APPROACH (面接で話す流れ)
+**Clarifying Questions:**
+- "The array is already sorted, correct?"
+- "Is there guaranteed to be exactly one solution?"
+- "Are the indices 1-based or 0-based?"
 
-"Since the array is already sorted, I can use two pointers — one at the beginning and one at the end."
+**Constraints:**
+- 2 <= numbers.length <= 3 * 10^4
+- -1000 <= numbers[i] <= 1000
+- Array is sorted in non-decreasing order
+- Exactly one solution exists
+- Must use constant extra space
 
-"If the sum of the two pointed values is less than the target, I move the left pointer right to increase the sum. If the sum is greater, I move the right pointer left to decrease it."
+**Test Cases:**
 
-"Since exactly one solution is guaranteed, the pointers will always meet at the answer."
+1. **Happy Path**: `numbers = [2, 7, 11, 15], target = 9` → `[1, 2]`
+2. **Happy Path**: `numbers = [1, 3, 4, 5, 7, 10, 11], target = 9` → `[3, 4]` (answer in the middle)
+3. **Edge Case**: `numbers = [-1, 0], target = -1` → `[1, 2]` (negative numbers)
+4. **Edge Case**: `numbers = [1, 1, 3], target = 2` → `[1, 2]` (same values)
+5. **Constraint**: `numbers = [1, 2, 3, 4, 5], target = 9` → `[4, 5]` (answer at the end)
 
-## 3. SOLUTION
+## M - Match（パターンマッチ）
+
+**Pattern: Two Pointers (from both ends)**
+
+"I think we can use two pointers — one at the start, one at the end."
+
+Why this pattern?
+- The array is already sorted.
+- If the sum is too small, move the left pointer right to make it bigger.
+- If the sum is too big, move the right pointer left to make it smaller.
+- This finds the answer in one pass with O(1) space.
+
+Why not a hash map?
+- Hash map works but uses O(n) space.
+- The problem asks for O(1) space.
+- Since the array is sorted, two pointers are simpler and faster.
+
+## P - Plan（プラン立て）
+
+"Let me think about the steps."
+
+"I set left to the start, right to the end. I check the sum. If it matches the target, return the indices (plus 1 for 1-indexed). If too small, move left right. If too big, move right left."
+
+"Since one solution is guaranteed, the pointers will always meet at the answer."
+
+**Pseudocode:**
+```
+// set left = 0, right = end
+// while left < right:
+//   sum = numbers[left] + numbers[right]
+//   if sum == target: return [left+1, right+1]
+//   if sum < target: left++
+//   if sum > target: right--
+```
+
+```mermaid
+flowchart TD
+    A[Start: left = 0, right = end] --> B{left < right?}
+    B -->|No| F[Return empty - unreachable]
+    B -->|Yes| C[sum = nums left + nums right]
+    C --> D{sum vs target?}
+    D -->|Equal| E[Return left+1, right+1]
+    D -->|Less| G[left++] --> B
+    D -->|Greater| H[right--] --> B
+```
+
+## I - Implement（実装）
 
 ```typescript
 function twoSum(numbers: number[], target: number): number[] {
@@ -46,93 +97,30 @@ function twoSum(numbers: number[], target: number): number[] {
 }
 ```
 
-## 4. COMPLEXITY (必ず聞かれる)
+## R - Review（振り返り）
 
-**Time: O(n)**
-- "Each pointer moves at most n times, and we do constant work per step, so it's O(n)."
+"Let me walk through Test Case 1: `numbers = [2, 7, 11, 15], target = 9`."
 
-**Space: O(1)**
-- "We only use two pointer variables regardless of input size."
+| Step | left | right | nums[L] | nums[R] | sum | Action |
+|------|------|-------|---------|---------|-----|--------|
+| 1 | 0 | 3 | 2 | 15 | 17 | 17 > 9 → right-- |
+| 2 | 0 | 2 | 2 | 11 | 13 | 13 > 9 → right-- |
+| 3 | 0 | 1 | 2 | 7 | 9 | 9 === 9 → return [**1, 2**] |
 
-## 5. KEY PHRASES (面接で使える英語)
+"Let me also walk through Test Case 2: `numbers = [1, 3, 4, 5, 7, 10, 11], target = 9`."
 
-**Clarifying questions:**
-- "The array is already sorted, correct?"
-- "Is there guaranteed to be exactly one solution?"
-- "Are the indices 1-based or 0-based?"
+| Step | left | right | nums[L] | nums[R] | sum | Action |
+|------|------|-------|---------|---------|-----|--------|
+| 1 | 0 | 6 | 1 | 11 | 12 | 12 > 9 → right-- |
+| 2 | 0 | 5 | 1 | 10 | 11 | 11 > 9 → right-- |
+| 3 | 0 | 4 | 1 | 7 | 8 | 8 < 9 → left++ |
+| 4 | 1 | 4 | 3 | 7 | 10 | 10 > 9 → right-- |
+| 5 | 1 | 3 | 3 | 5 | 8 | 8 < 9 → left++ |
+| 6 | 2 | 3 | 4 | 5 | 9 | 9 === 9 → return [**3, 4**] |
 
-**Explaining approach:**
-- "I'll use two pointers, one at each end of the array"
-- "Since the array is sorted, I can adjust the sum by moving the appropriate pointer"
-- "This is essentially a binary search-like elimination — each step rules out an entire row or column"
-
-**Explaining complexity:**
-- "The time complexity is O(n) since each pointer moves at most n positions"
-- "The space complexity is O(1) — just two pointers"
-
-## 6. VISUAL WALKTHROUGH
-
-numbers = [2, 7, 11, 15], target = 9
-
-```
-[2,  7,  11,  15]
- L             R
-
-sum = 2 + 15 = 17 > 9 → R left
-
-[2,  7,  11,  15]
- L        R
-
-sum = 2 + 11 = 13 > 9 → R left
-
-[2,  7,  11,  15]
- L   R
-
-sum = 2 + 7 = 9 ✓ → return [1, 2]
-```
-
-numbers = [1, 3, 4, 5, 7, 10, 11], target = 9
-
-```
-[1,  3,  4,  5,  7,  10,  11]
- L                         R
-
-sum = 1 + 11 = 12 > 9 → R left
-
-[1,  3,  4,  5,  7,  10,  11]
- L                   R
-
-sum = 1 + 10 = 11 > 9 → R left
-
-[1,  3,  4,  5,  7,  10,  11]
- L               R
-
-sum = 1 + 7 = 8 < 9 → L right
-
-[1,  3,  4,  5,  7,  10,  11]
-     L           R
-
-sum = 3 + 7 = 10 > 9 → R left
-
-[1,  3,  4,  5,  7,  10,  11]
-     L       R
-
-sum = 3 + 5 = 8 < 9 → L right
-
-[1,  3,  4,  5,  7,  10,  11]
-         L   R
-
-sum = 4 + 5 = 9 ✓ → return [3, 4]
-```
-
-## 7. EDGE CASES
-
-- Two elements: [1, 2], target = 3 → [1, 2]
-- Negative numbers: [-3, -1, 0, 1, 5], target = -4 → [1, 2]
-- Target is zero: [-1, 0, 1], target = 0 → [1, 3]
-- Same values: [1, 1, 3], target = 2 → [1, 2]
-
-## 8. TEST CASES
+"Let me check edge cases."
+- `[-1, 0], target = -1` → sum = -1 + 0 = -1 ✓ → return [1, 2] ✓
+- `[1, 1, 3], target = 2` → sum = 1 + 3 = 4 > 2 → R left, sum = 1 + 1 = 2 ✓ → return [1, 2] ✓
 
 ```typescript
 console.log("Test 1:", twoSum([2, 7, 11, 15], 9));
@@ -151,7 +139,27 @@ console.log("Test 5:", twoSum([1, 2, 3, 4, 5], 9));
 // Expected: [4, 5]
 ```
 
-## 9. CORE IDEA
+## E - Evaluate（評価）
+
+**Time: O(n)**
+- "Each pointer moves at most n times. I do constant work per step. So it's O(n)."
+
+**Space: O(1)**
+- "I only use two pointer variables. No matter how big the input is."
+
+**Why this approach?**
+- The array is sorted, so two pointers are perfect.
+- Hash map works but uses O(n) space. The problem requires O(1) space.
+- Binary search also works (O(n log n)) but two pointers is simpler and faster (O(n)).
+
+**Trade-off:**
+| | Two Pointers | Hash Map | Binary Search |
+|---|---|---|---|
+| Time | O(n) | O(n) | O(n log n) |
+| Space | O(1) | O(n) | O(1) |
+| Requirement | Sorted | Any | Sorted |
+
+## CORE IDEA
 
 **Two Sum II is the building block of 3Sum.**
 
@@ -160,12 +168,12 @@ console.log("Test 5:", twoSum([1, 2, 3, 4, 5], 9));
 Two Sum:  two pointers from both ends of sorted array
 ```
 
-The key principle is the same:
-- Sorted array → you know which direction changes the sum
+The key idea is the same:
+- Sorted array → you know which way changes the sum
 - Too small → move left pointer right
 - Too large → move right pointer left
 
-## 10. WHY TWO POINTERS WORK
+## WHY TWO POINTERS WORK
 
 Think of all possible pairs as a grid:
 
@@ -179,26 +187,26 @@ s 15   [  ,    ,    ,  30]
 [L]↓
 ```
 
-The grid is sorted — values increase going right and going down.
+The grid is sorted — values get bigger going right and going down.
 
 - Start at top-right corner (L=0, R=last)
 - Too big → move left (R--)
 - Too small → move down (L++)
 
-Each step eliminates an entire row or column. That's why it's O(n).
+Each step removes an entire row or column. That's why it's O(n).
 
-## 11. COMMON INTERVIEW QUESTIONS
+## COMMON INTERVIEW QUESTIONS
 
 **Q: Why not use a hash map like regular Two Sum?**
-A: A hash map works but uses O(n) space. The problem requires O(1) space, and since the array is sorted, two pointers achieve this.
+A: "A hash map works but uses O(n) space. The problem needs O(1) space. Since the array is sorted, two pointers do the job."
 
 **Q: Why not use binary search?**
-A: Binary search works (O(n log n)) but two pointers is simpler and faster (O(n)).
+A: "Binary search works (O(n log n)) but two pointers is simpler and faster (O(n))."
 
 **Q: How is this related to 3Sum?**
-A: 3Sum fixes one element and runs this exact algorithm on the remaining array. Two Sum II is the inner loop of 3Sum.
+A: "3Sum fixes one element and runs this exact algorithm on the rest. Two Sum II is the inner loop of 3Sum."
 
-## 12. RELATED PROBLEMS
+## RELATED PROBLEMS
 
 - LeetCode 1. Two Sum (unsorted, hash map approach)
 - LeetCode 15. 3Sum (fix one + Two Sum II)

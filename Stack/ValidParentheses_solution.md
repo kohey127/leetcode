@@ -1,42 +1,86 @@
-# LeetCode 20. Valid Parentheses
+# LeetCode 20. Valid Parentheses (Easy)
 
 https://leetcode.com/problems/valid-parentheses/
 
-## 1. PROBLEM UNDERSTANDING
+## U - Understand（問題の理解）
 
 - **What**: Check if a string of brackets is properly matched and nested
 - **Input**: String containing only '(', ')', '{', '}', '[', ']'
 - **Output**: boolean - true if valid, false otherwise
 
+**Clarifying Questions:**
+- "Can the string be empty? Or is it guaranteed to have at least one character?"
+- "Does the string contain only bracket characters, no other characters?"
+- "Just to confirm, we need to check both matching type AND correct nesting order?"
+
 **Constraints:**
 - 1 <= s.length <= 10^4
 - Only contains '()[]{}'
 
-**Key Insight:**
-- When we see a closing bracket, the most recent unmatched opening bracket must be of the same type -> LIFO pattern -> Stack!
-- "Most recent" is the key word that suggests using a stack
+**Test Cases:**
 
-## 2. APPROACH (Interview Flow)
+1. **Happy Path**: `"{[()]}"` → `true` (nested brackets, all match)
+2. **Happy Path**: `"()[]{}"` → `true` (side by side, all match)
+3. **Edge Case**: `"("` → `false` (single character, unmatched)
+4. **Edge Case**: `")("` → `false` (closing first, stack empty)
+5. **Constraint**: `"([)]"` → `false` (wrong nesting order)
 
-"Let me think about this problem step by step.
+## M - Match（パターンマッチ）
 
-When I encounter a closing bracket, I need to check if it matches
-the most recently opened bracket. This 'most recent' pattern
-suggests using a stack - Last In, First Out.
+**Pattern: Stack (LIFO)**
 
-My approach:
-1. Iterate through each character in the string
-2. If it's an opening bracket, push it onto the stack
-3. If it's a closing bracket:
-   - If the stack is empty, return false (no matching open bracket)
-   - Pop from stack and check if it matches
-   - If doesn't match, return false
-4. After processing all characters, the stack should be empty
+"I think we can use a stack here."
 
-For efficient matching, I'll use a hash map to map closing brackets
-to their corresponding opening brackets."
+Why?
+- When we see a closing bracket, we need to match it with the MOST RECENT opening bracket.
+- "Most recent" is the key word. That is a LIFO pattern → Stack.
+- A hash map gives us O(1) lookup to check if a pair matches.
 
-## 3. SOLUTION
+## P - Plan（プラン立て）
+
+"Let me think about the steps."
+
+"I go through each character in the string.
+1. If it's an opening bracket, I push it onto the stack.
+2. If it's a closing bracket:
+   - If the stack is empty, return false (no matching open bracket).
+   - Pop from the stack and check if it matches.
+   - If it doesn't match, return false.
+3. After all characters, the stack should be empty."
+
+"I'll use a hash map to map each closing bracket to its opening bracket."
+
+**Pseudocode:**
+```
+// create empty stack
+// create map: closing bracket → opening bracket
+// for each char in string:
+//   if char is a closing bracket:
+//     if stack is empty OR pop doesn't match → return false
+//   else:
+//     push char (opening bracket) onto stack
+// return stack is empty
+```
+
+**Flowchart:**
+
+```mermaid
+flowchart TD
+    A[Start: for each char] --> B{Is closing bracket?}
+    B -->|No| C[Push to stack]
+    B -->|Yes| D{Stack empty?}
+    D -->|Yes| E[Return false]
+    D -->|No| F{Pop matches?}
+    F -->|No| E
+    F -->|Yes| A
+    C --> A
+    A --> G{All chars done?}
+    G -->|Yes| H{Stack empty?}
+    H -->|Yes| I[Return true]
+    H -->|No| E
+```
+
+## I - Implement（実装）
 
 ```typescript
 function isValid(s: string): boolean {
@@ -66,9 +110,53 @@ function isValid(s: string): boolean {
 }
 ```
 
-## 4. COMPLEXITY (Always Asked!)
+## R - Review（振り返り）
 
-### Time: O(n)
+"Let me walk through Test Case 1: `{[()]}`."
+
+| Step | char | Stack (bottom→top) | Action |
+|------|------|--------------------|--------|
+| 1 | { | ['{'] | Push '{' |
+| 2 | [ | ['{', '['] | Push '[' |
+| 3 | ( | ['{', '[', '('] | Push '(' |
+| 4 | ) | ['{', '['] | ')' matches '(' ✓ Pop |
+| 5 | ] | ['{'] | ']' matches '[' ✓ Pop |
+| 6 | } | [] | '}' matches '{' ✓ Pop |
+
+Stack is empty → return true ✓
+
+"Let me also check a failing case: `([)]`."
+
+| Step | char | Stack (bottom→top) | Action |
+|------|------|--------------------|--------|
+| 1 | ( | ['('] | Push '(' |
+| 2 | [ | ['(', '['] | Push '[' |
+| 3 | ) | - | ')' should match '[' ✗ |
+
+Mismatch! return false ✗
+
+"Let me check edge cases too."
+
+- **Single character** `"("`: push '(', loop ends, stack is not empty → false ✓
+- **Closing first** `")("`: stack is empty when seeing ')' → false ✓
+- **Only opening** `"((("`: push 3 times, stack is not empty at end → false ✓
+
+```typescript
+console.log(isValid("()") === true, 'Test 1: "()" → true');
+console.log(isValid("()[]{}") === true, 'Test 2: "()[]{}" → true');
+console.log(isValid("(]") === false, 'Test 3: "(]" → false');
+console.log(isValid("([])") === true, 'Test 4: "([])" → true');
+console.log(isValid("{[()]}") === true, 'Test 5: "{[()]}" → true');
+console.log(isValid("([)]") === false, 'Test 6: "([)]" → false');
+console.log(isValid("(") === false, 'Test 7: "(" → false');
+console.log(isValid(")") === false, 'Test 8: ")" → false');
+console.log(isValid("((()))") === true, 'Test 9: "((()))" → true');
+```
+
+## E - Evaluate（評価）
+
+**Time: O(n)**
+- "Time is O(n) because I visit each character once. Push and pop are O(1)."
 
 Processing "([{}])":
 
@@ -83,117 +171,34 @@ Processing "([{}])":
 Total: 6 = n characters
 ```
 
-→ We visit each character exactly once → O(n)
-→ push/pop are O(1) since they operate on the end of the array
+**Space: O(n)**
+- "Space is O(n) in the worst case. If the string is all opening brackets like '(((((', I push everything onto the stack."
 
-### Space: O(n) - Worst Case
-
-Worst case: "(((((((" ← all opening brackets
+Worst case: "((((((("
 
 ```
 ( → stack: ["("]
 ( → stack: ["(", "("]
 ( → stack: ["(", "(", "("]
-( → stack: ["(", "(", "(", "("]
-( → stack: ["(", "(", "(", "(", "("]
-( → stack: ["(", "(", "(", "(", "(", "("]
-( → stack: ["(", "(", "(", "(", "(", "(", "("]
-───────────────────────────────────────────
-Stack has 7 items = n characters
-```
-
-→ No closing brackets means nothing gets popped
-→ Everything stays in the stack → O(n)
-
-### Space: O(1) - Best Case (for reference)
-
-Best case: "()()()()" ← open and close immediately
-
-```
-( → stack: ["("]
-) → stack: []      ← popped right away
-( → stack: ["("]
-) → stack: []      ← popped right away
 ...
-───────────────────────────────────────────
-Stack always has at most 1 item → O(1)
+Stack has 7 items = n characters → O(n)
 ```
 
-→ But we always consider the worst case, so Space: O(n)
+Best case: "()()()()" → stack always has at most 1 item → O(1). But we report worst case.
 
-## 5. KEY PHRASES (Interview English)
+**Why this approach?**
+- Stack is the natural fit for "most recent" matching problems.
+- Hash map makes bracket matching O(1) and clean.
+- Counting alone won't work with multiple bracket types. For example, `"([)]"` has equal counts but is invalid due to wrong nesting.
 
-**Clarifying Questions:**
-- "Can the string be empty? Or is it guaranteed to have at least one character?"
-- "Does the string contain only bracket characters, no other characters?"
-- "Just to confirm, we need to check both matching type AND correct nesting order?"
-
-**Explaining Approach:**
-- "The key insight is that when we see a closing bracket, we need to match it with the MOST RECENT unmatched opening bracket."
-- "This 'most recent' pattern is a classic use case for a stack - LIFO."
-- "I'll use a hash map for O(1) bracket matching lookup."
-
-**Explaining Complexity:**
-- "Time is O(n) since we make a single pass through the string, and stack operations are constant time."
-- "Space is O(n) in the worst case when the string is all opening brackets, like '(((((' - we'd push all of them onto the stack."
-
-## 6. VISUAL WALKTHROUGH
-
-### Example: "{[()]}"
-
-| Step | char | Stack (bottom→top) | Action |
-|------|------|--------------------|--------|
-| 1 | { | ['{'] | Push '{' |
-| 2 | [ | ['{', '['] | Push '[' |
-| 3 | ( | ['{', '[', '('] | Push '(' |
-| 4 | ) | ['{', '['] | ')' matches '(' ✓ Pop |
-| 5 | ] | ['{'] | ']' matches '[' ✓ Pop |
-| 6 | } | [] | '}' matches '{' ✓ Pop |
-
-Stack is empty → return true ✓
-
-### Example: "([)]"
-
-| Step | char | Stack (bottom→top) | Action |
-|------|------|--------------------|--------|
-| 1 | ( | ['('] | Push '(' |
-| 2 | [ | ['(', '['] | Push '[' |
-| 3 | ) | - | ')' should match '[' ✗ |
-
-Mismatch! return false ✗
-
-## 7. EDGE CASES
-
-- Single character: "(" → false (unmatched)
-- Closing first: ")(" → false (stack empty when seeing ')')
-- Only opening: "(((" → false (stack not empty at end)
-- Empty result after all matches: "()" → true
-- Nested same type: "(())" → true
-- Interleaved different types: "([{}])" → true
-- Wrong nesting: "([)]" → false
-
-## 8. TEST CASES
-
-```typescript
-console.log(isValid("()") === true, 'Test 1: "()" → true');
-console.log(isValid("()[]{}") === true, 'Test 2: "()[]{}" → true');
-console.log(isValid("(]") === false, 'Test 3: "(]" → false');
-console.log(isValid("([])") === true, 'Test 4: "([])" → true');
-console.log(isValid("{[()]}") === true, 'Test 5: "{[()]}" → true');
-console.log(isValid("([)]") === false, 'Test 6: "([)]" → false');
-console.log(isValid("(") === false, 'Test 7: "(" → false');
-console.log(isValid(")") === false, 'Test 8: ")" → false');
-console.log(isValid("((()))") === true, 'Test 9: "((()))" → true');
-```
-
-## 9. VARIATIONS
+## VARIATIONS
 
 - **Generate Parentheses (LeetCode 22)** - Generate all valid combinations of n pairs
 - **Longest Valid Parentheses (LeetCode 32)** - Find length of longest valid substring
 - **Remove Invalid Parentheses (LeetCode 301)** - Remove minimum number of invalid brackets
 - **Minimum Add to Make Parentheses Valid (LeetCode 921)** - Count minimum insertions needed
 
-## 10. WHEN TO USE STACK
+## WHEN TO USE STACK
 
 **Q: When should I think about using a Stack?**
 A: Look for these patterns:
@@ -207,7 +212,7 @@ A: Look for these patterns:
 A: Stack (LIFO): Need to process most recent first
    Queue (FIFO): Need to process in order received
 
-## 11. COMMON INTERVIEW QUESTIONS
+## COMMON INTERVIEW QUESTIONS
 
 **Q: Why use a stack instead of just counting?**
 A: "Counting only works for single bracket type like '()'.
@@ -225,7 +230,7 @@ A: "I'd store the index along with the bracket in the stack,
 like stack.push({char: '(', index: 0}), and return the
 index when we find a mismatch."
 
-## 12. RELATED PROBLEMS
+## RELATED PROBLEMS
 
 - LeetCode 22: Generate Parentheses (Medium)
 - LeetCode 32: Longest Valid Parentheses (Hard)
@@ -234,7 +239,7 @@ index when we find a mismatch."
 - LeetCode 1249: Minimum Remove to Make Valid Parentheses (Medium)
 - LeetCode 1541: Minimum Insertions to Balance a Parentheses String (Medium)
 
-## 13. HOW TO READ CODE ALOUD
+## HOW TO READ CODE ALOUD
 
 **Code Symbols:**
 - `{}` → "curly braces" or "curly brackets"

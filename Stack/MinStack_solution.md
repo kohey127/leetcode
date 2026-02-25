@@ -1,33 +1,92 @@
-# LeetCode 155. Min Stack
+# LeetCode 155. Min Stack (Medium)
 
 https://leetcode.com/problems/min-stack/
 
-## 1. PROBLEM UNDERSTANDING
+## U - Understand（問題の理解）
 
-- **What**: Design a stack that supports push, pop, top, and retrieving the minimum element — all in O(1) time
+- **What**: Design a stack that supports push, pop, top, and getting the minimum element -- all in O(1) time
 - **Input**: A sequence of operations (push, pop, top, getMin)
 - **Output**: Results of top() and getMin() calls
-- **Constraints**:
-  - -2^31 <= val <= 2^31 - 1
-  - pop, top, getMin are always called on non-empty stacks
-  - At most 3 * 10^4 calls
-- **Key Insight**: A regular stack gives O(1) push/pop/top, but getMin is O(n). The trick is to **record the minimum at the time of each push**. This way, when we pop, the previous minimum is already stored underneath.
 
-## 2. APPROACH (Interview Flow)
+**Clarifying Questions:**
+- "Can I assume pop, top, and getMin will only be called on non-empty stacks?"
+- "Is there a constraint on the range of values that can be pushed?"
+- "Should I handle concurrent access, or is single-threaded fine?"
 
-"The challenge here is that getMin needs to be O(1). If I just use a regular stack, I'd have to scan the whole stack to find the minimum each time.
+**Constraints:**
+- -2^31 <= val <= 2^31 - 1
+- pop, top, getMin are always called on non-empty stacks
+- At most 3 * 10^4 calls
 
-My key insight is: if I record the minimum at the time of each push, then when I pop, the previous minimum is already stored underneath.
+**Test Cases:**
 
-I'll use two stacks:
-1. A main stack for the actual values
-2. A min stack that records the minimum at the time of each push
+1. **Happy Path**: push(-2), push(0), push(-3), getMin() → -3, pop(), top() → 0, getMin() → -2
+2. **Edge Case**: push(5), getMin() → 5, top() → 5 (single element)
+3. **Constraint**: push(3), push(3), push(3), getMin() → 3, pop(), getMin() → 3 (all same values)
+4. **Edge Case**: push(3), push(2), push(1), pop(), getMin() → 2 (decreasing order, then pop)
 
-When I push a value, I also push the new minimum onto the min stack — which is either the new value or the current minimum, whichever is smaller.
+## M - Match（パターンマッチ）
+
+**Pattern: Two stacks (auxiliary data structure)**
+
+"I think we can use two stacks to solve this."
+
+Why?
+- A regular stack gives O(1) push/pop/top. But getMin is O(n) because we have to scan the whole stack.
+- The trick: record the minimum at the time of each push. When we pop, the previous minimum is already stored underneath.
+- A second stack (min stack) tracks the running minimum at every level.
+
+## P - Plan（プラン立て）
+
+"Let me think about how to keep track of the minimum."
+
+"If I only keep one variable for the min, when I pop that min value, I don't know what the new min is. I'd need O(n) to find it."
+
+"So I use two stacks:
+1. A main stack for the values.
+2. A min stack that records the minimum at each push.
+
+When I push a value, I also push the new minimum onto the min stack. The new minimum is either the value or the current minimum, whichever is smaller.
 
 When I pop, I pop from both stacks. The top of the min stack always gives me the current minimum."
 
-## 3. SOLUTION
+**Pseudocode:**
+```
+// class MinStack:
+//   stack = []
+//   minStack = []
+//
+//   push(val):
+//     stack.push(val)
+//     newMin = min(val, top of minStack) or val if minStack is empty
+//     minStack.push(newMin)
+//
+//   pop():
+//     stack.pop()
+//     minStack.pop()
+//
+//   top():
+//     return last element of stack
+//
+//   getMin():
+//     return last element of minStack
+```
+
+**Flowchart:**
+
+```mermaid
+flowchart TD
+    A[Operation called] --> B{Which operation?}
+    B -->|push val| C[Push val to stack]
+    C --> D[newMin = min of val and minStack top]
+    D --> E[Push newMin to minStack]
+    B -->|pop| F[Pop from stack]
+    F --> G[Pop from minStack]
+    B -->|top| H[Return stack top]
+    B -->|getMin| I[Return minStack top]
+```
+
+## I - Implement（実装）
 
 ```typescript
 class MinStack {
@@ -61,66 +120,28 @@ class MinStack {
 }
 ```
 
-## 4. COMPLEXITY (Always Asked!)
+## R - Review（振り返り）
 
-### Time: O(1) for all operations
+"Let me walk through Test Case 1: push(-2), push(0), push(-3), getMin, pop, top, getMin."
 
-- **push**: One push to each stack → O(1)
-- **pop**: One pop from each stack → O(1)
-- **top**: Array index access → O(1)
-- **getMin**: Array index access → O(1)
+| Operation | stack | minStack | Result |
+|-----------|-------|----------|--------|
+| push(-2) | [-2] | [-2] | |
+| push(0) | [-2, 0] | [-2, -2] | |
+| push(-3) | [-2, 0, -3] | [-2, -2, **-3**] | |
+| getMin() | | | **-3** |
+| pop() | [-2, 0] | [-2, -2] | |
+| top() | | | **0** |
+| getMin() | | | **-2** |
 
-"Every single operation is constant time because we're just doing array push, pop, or index access."
+"When we popped -3, the minStack also popped -3. The new minimum -2 was already stored underneath. No re-scanning needed."
 
-### Space: O(n)
+"Let me check edge cases too."
 
-- We maintain two stacks, each with at most n elements
-- "In the worst case, both stacks have n elements, so space is O(n)."
-
-## 5. KEY PHRASES (Interview English)
-
-**Clarifying Questions:**
-- "Can I assume pop, top, and getMin will only be called on non-empty stacks?"
-- "Is there a constraint on the range of values that can be pushed?"
-- "Should I handle concurrent access, or is single-threaded fine?"
-
-**Explaining Approach:**
-- "The naive approach for getMin would be O(n) — scanning the whole stack each time."
-- "My key insight is to maintain a parallel stack that tracks the running minimum."
-- "This way, whenever I pop an element, the new minimum is already stored at the top of my min stack."
-
-**Explaining Complexity:**
-- "All four operations are O(1) because they only involve push, pop, or peek on arrays."
-- "The trade-off is O(n) extra space for the min stack, but that gives us O(1) getMin."
-
-## 6. VISUAL WALKTHROUGH
-
-### Operations: push(-2), push(0), push(-3), getMin, pop, top, getMin
-
-```
-Operation     stack          minStack       getMin
-─────────     ─────          ────────       ──────
-push(-2)      [-2]           [-2]
-push(0)       [-2, 0]        [-2, -2]
-push(-3)      [-2, 0, -3]    [-2, -2, -3]
-getMin()                                    → -3  (top of minStack)
-pop()         [-2, 0]        [-2, -2]
-top()                                       → 0   (top of stack)
-getMin()                                    → -2  (top of minStack)
-```
-
-**Why this works:** When we popped -3, the minStack also popped -3, revealing -2 as the new minimum — no re-scanning needed!
-
-## 7. EDGE CASES
-
-- Single element: push(5), getMin() → 5, top() → 5
-- All same values: push(3), push(3), push(3) → getMin always 3
-- Decreasing order: push(3), push(2), push(1) → minStack mirrors stack
-- Increasing order: push(1), push(2), push(3) → minStack is [1, 1, 1]
-- Push then pop all: after popping everything, no getMin call (guaranteed non-empty)
-- Negative values: push(-1), push(-2) → getMin = -2
-
-## 8. TEST CASES
+- **Single element**: push(5) → stack=[5], minStack=[5]. getMin()=5, top()=5 ✓
+- **All same values**: push(3), push(3), push(3) → minStack=[3,3,3]. getMin always 3. After pop, still 3 ✓
+- **Decreasing order**: push(3), push(2), push(1) → minStack=[3,2,1]. Pop → minStack=[3,2]. getMin()=2 ✓
+- **Increasing order**: push(1), push(2), push(3) → minStack=[1,1,1]. getMin always 1 ✓
 
 ```typescript
 const minStack = new MinStack();
@@ -152,7 +173,34 @@ ms3.pop();
 console.log(ms3.getMin() === 3, "Test 8: after pop → 3");
 ```
 
-## 9. VARIATIONS
+## E - Evaluate（評価）
+
+**Time: O(1) for all operations**
+- "Every operation is constant time because I only do array push, pop, or index access."
+  - push: one push to each stack → O(1)
+  - pop: one pop from each stack → O(1)
+  - top: array index access → O(1)
+  - getMin: array index access → O(1)
+
+**Space: O(n)**
+- "I keep two stacks, each with at most n elements. So space is O(n)."
+
+**Why this approach?**
+- The naive approach for getMin is O(n) -- scan the whole stack each time.
+- A single min variable breaks when we pop the min value.
+- Two stacks give O(1) for all operations. The trade-off is O(n) extra space for the min stack.
+
+**Trade-off:**
+| | Two Stacks | Single min variable |
+|---|---|---|
+| push | O(1) | O(1) |
+| pop | O(1) | O(n) to find new min |
+| getMin | O(1) | O(1) |
+| Space | O(n) extra | O(1) extra |
+
+→ "Two stacks is better because all operations are O(1)."
+
+## VARIATIONS
 
 ### A. Single Stack Approach (Space Optimization)
 
@@ -179,33 +227,33 @@ Same time/space complexity, but arguably cleaner code.
 
 Only push to minStack when the new value is <= current min. Pop from minStack only when the popped value equals the current min. This saves space when few elements are minimums.
 
-## 10. WHEN TO USE WHICH
+## WHEN TO USE WHICH
 
 **Q: When should I think about using an auxiliary data structure alongside a stack?**
-A: When a problem asks for O(1) access to some aggregate property (min, max, frequency) that would normally require scanning. The pattern is: maintain a parallel structure that tracks the aggregate at each state.
+A: When a problem asks for O(1) access to some aggregate property (min, max, frequency) that would normally need scanning. The pattern is: keep a parallel structure that tracks the aggregate at each state.
 
 **Q: Two stacks vs single stack with pairs?**
-A: Two stacks is easier to explain in interviews and is the more common approach. Single stack with pairs is slightly more elegant. Both have identical time and space complexity.
+A: Two stacks is easier to explain in interviews and is the more common approach. Single stack with pairs is slightly more elegant. Both have the same time and space complexity.
 
-## 11. COMMON INTERVIEW QUESTIONS
+## COMMON INTERVIEW QUESTIONS
 
 **Q: Why can't you just keep a single variable for the minimum?**
-A: "If I only track the current min in one variable, when I pop that min value, I'd need to find the new min — which requires O(n) scanning. The min stack remembers the min at every stack level, so popping is still O(1)."
+A: "If I only track the current min in one variable, when I pop that min value, I'd need to find the new min -- which needs O(n) scanning. The min stack remembers the min at every stack level, so popping is still O(1)."
 
 **Q: Can you optimize the space of the min stack?**
 A: "Yes. I can only push to the min stack when the new value is less than or equal to the current min. And only pop from the min stack when the value being popped equals the current min. This way the min stack may be smaller than the main stack."
 
 **Q: What if we also needed getMax in O(1)?**
-A: "I'd add a third stack — a max stack — using the same pattern. Push the running max on each push, pop on each pop."
+A: "I'd add a third stack -- a max stack -- using the same pattern. Push the running max on each push, pop on each pop."
 
-## 12. RELATED PROBLEMS
+## RELATED PROBLEMS
 
-- LeetCode 716: Max Stack (Hard) — Same idea but for max, plus popMax()
-- LeetCode 232: Implement Queue using Stacks (Easy) — Stack design problem
-- LeetCode 225: Implement Stack using Queues (Easy) — Stack design problem
-- LeetCode 895: Maximum Frequency Stack (Hard) — Stack + frequency tracking
+- LeetCode 716: Max Stack (Hard) -- Same idea but for max, plus popMax()
+- LeetCode 232: Implement Queue using Stacks (Easy) -- Stack design problem
+- LeetCode 225: Implement Stack using Queues (Easy) -- Stack design problem
+- LeetCode 895: Maximum Frequency Stack (Hard) -- Stack + frequency tracking
 
-## 13. HOW TO READ CODE ALOUD
+## HOW TO READ CODE ALOUD
 
 **Code Symbols:**
 - `this.stack` → "this dot stack"
@@ -223,6 +271,6 @@ A: "I'd add a third stack — a max stack — using the same pattern. Push the r
 First, I push minus 2. Both stacks get minus 2.
 Then I push 0. The main stack gets 0, but the min stack gets minus 2 again because minus 2 is still the minimum.
 Next, I push minus 3. Both stacks get minus 3 since it's a new minimum.
-Now getMin returns minus 3 — just the top of the min stack.
+Now getMin returns minus 3 -- just the top of the min stack.
 When I pop, both stacks pop minus 3.
-Top returns 0, and getMin returns minus 2 — the previous minimum is right there on top of the min stack."
+Top returns 0, and getMin returns minus 2 -- the previous minimum is right there on top of the min stack."

@@ -1,26 +1,79 @@
-# LeetCode 125. Valid Palindrome
+# LeetCode 125. Valid Palindrome (Easy)
 
 https://leetcode.com/problems/valid-palindrome/
 
-## 1. PROBLEM UNDERSTANDING
+## U - Understand（問題の理解）
 
-- **What**: Determine if a string is a palindrome, considering only alphanumeric characters and ignoring case
-- **Input**: A string `s` (may contain letters, digits, spaces, punctuation)
+- **What**: Check if a string is a palindrome. Only look at letters and digits. Ignore upper/lower case.
+- **Input**: A string `s` (may have letters, digits, spaces, punctuation)
 - **Output**: `true` if it's a palindrome, `false` otherwise
-- **Constraints**:
-  - 1 <= s.length <= 2 * 10^5
-  - s consists only of printable ASCII characters
-- **Key Insight**: Use two pointers from both ends, skip non-alphanumeric characters, and compare lowercase versions. No need to create a cleaned string first.
 
-## 2. APPROACH (Interview Flow)
+**Clarifying Questions:**
+- "When you say palindrome, should I ignore non-alphanumeric characters like spaces and punctuation?"
+- "Should the comparison be case-insensitive?"
+- "Is an empty string considered a palindrome?"
 
-"First, I want to clarify what counts as a palindrome here — we ignore non-alphanumeric characters and treat uppercase and lowercase as the same.
+**Constraints:**
+- 1 <= s.length <= 2 * 10^5
+- s has only printable ASCII characters
 
-A brute force approach would be to first clean the string — remove all non-alphanumeric characters, convert to lowercase — then check if it equals its reverse. That works, but it uses O(n) extra space for the cleaned string.
+**Test Cases:**
 
-Instead, I'll use the two-pointer technique. I'll place one pointer at the start and one at the end. I'll move each pointer inward, skipping any non-alphanumeric characters. At each step, I compare the two characters in lowercase. If they ever don't match, it's not a palindrome. If the pointers meet or cross, it is."
+1. **Happy Path**: `"A man, a plan, a canal: Panama"` → `true` (classic palindrome with spaces and punctuation)
+2. **Happy Path**: `"race a car"` → `false` (not a palindrome)
+3. **Edge Case**: `" "` → `true` (empty after cleaning = palindrome)
+4. **Edge Case**: `"a"` → `true` (single character)
+5. **Edge Case**: `".,!"` → `true` (only symbols, empty after cleaning)
+6. **Constraint**: `"0P"` → `false` (digit vs letter)
+7. **Constraint**: `"Aa"` → `true` (case insensitive)
 
-## 3. SOLUTION
+## M - Match（パターンマッチ）
+
+**Pattern: Two Pointers (from both ends)**
+
+"I think we can use two pointers — one from the start and one from the end."
+
+Why this pattern?
+- We need to compare characters from both ends of the string.
+- Two pointers let us do this in one pass with O(1) space.
+- We skip non-alphanumeric characters as we go.
+
+Why not brute force (clean + reverse)?
+- Cleaning the string first uses O(n) extra space.
+- Two pointers avoid creating any new string.
+
+## P - Plan（プラン立て）
+
+"Let me think about the steps."
+
+"I put one pointer at the start, one at the end. I move them inward. I skip any character that is not a letter or digit. Then I compare in lowercase. If they don't match, return false. If the pointers meet, return true."
+
+**Pseudocode:**
+```
+// set left = 0, right = end of string
+// while left < right:
+//   skip non-alphanumeric from left
+//   skip non-alphanumeric from right
+//   if lowercase(s[left]) != lowercase(s[right]):
+//     return false
+//   left++, right--
+// return true
+```
+
+```mermaid
+flowchart TD
+    A[Start: left = 0, right = end] --> B{left < right?}
+    B -->|No| H[Return true]
+    B -->|Yes| C{s left is alphanumeric?}
+    C -->|No| D[left++] --> B
+    C -->|Yes| E{s right is alphanumeric?}
+    E -->|No| F[right--] --> B
+    E -->|Yes| G{lowercase match?}
+    G -->|No| I[Return false]
+    G -->|Yes| J[left++, right--] --> B
+```
+
+## I - Implement（実装）
 
 ```typescript
 function isPalindrome(s: string): boolean {
@@ -63,72 +116,31 @@ function isPalindromeBruteForce(s: string): boolean {
 }
 ```
 
-This creates a new cleaned string, a reversed copy, and joins it back. That's 3 extra strings = O(n) space. The two-pointer approach does it in O(1) space.
+This makes a new cleaned string, a reversed copy, and joins it back. That's 3 extra strings = O(n) space. Two pointers do it in O(1) space.
 
-## 4. COMPLEXITY (Always Asked!)
+## R - Review（振り返り）
 
-### Two-Pointer Approach
+"Let me walk through this with Test Case 1: `'A man, a plan, a canal: Panama'`."
 
-**Time: O(n)**
-- "Each pointer traverses the string at most once, so it's linear."
+| Step | left (char) | right (char) | Action | Result |
+|------|-------------|--------------|--------|--------|
+| 1 | 0 ('A') | 29 ('a') | 'a' == 'a' ✓ | match |
+| 2 | 2 ('m') | 27 ('m') | 'm' == 'm' ✓ | match |
+| 3 | 3 ('a') | 26 ('a') | 'a' == 'a' ✓ | match |
+| 4 | 4 ('n') | 24 ('n') | 'n' == 'n' ✓ | match |
+| ... | ... | ... | ...continues matching... | |
+| - | - | - | Pointers meet | return **true** |
 
-**Space: O(1)**
-- "We only use two pointer variables. No extra strings or arrays."
+"Let me also check `'race a car'`."
 
-### Brute Force Approach
+| Step | left (char) | right (char) | Action | Result |
+|------|-------------|--------------|--------|--------|
+| 1 | 0 ('r') | 9 ('r') | 'r' == 'r' ✓ | match |
+| 2 | 1 ('a') | 8 ('a') | 'a' == 'a' ✓ | match |
+| 3 | 2 ('c') | 7 ('c') | 'c' == 'c' ✓ | match |
+| 4 | 3 ('e') | 5 ('a') | 'e' != 'a' ✗ | return **false** |
 
-**Time: O(n)**
-- "Cleaning, reversing, and comparing are all O(n)."
-
-**Space: O(n)**
-- "We create a cleaned string and a reversed copy."
-
-## 5. KEY PHRASES (Interview English)
-
-**Clarifying Questions:**
-- "When you say palindrome, should I ignore non-alphanumeric characters like spaces and punctuation?"
-- "Should the comparison be case-insensitive?"
-- "Is an empty string considered a palindrome?"
-
-**Explaining Approach:**
-- "I'll use two pointers, one from the start and one from the end."
-- "I'll skip over any characters that aren't letters or digits."
-- "At each step, I compare the characters in lowercase."
-
-**Explaining Complexity:**
-- "Time is O(n) because each pointer moves through the string at most once."
-- "Space is O(1) because I'm comparing in place without creating a new string."
-
-**Common Mistakes to Mention:**
-- "I need to make sure I skip non-alphanumeric characters from both sides."
-- "I have to check `left < right` inside the inner while loops too, to avoid the pointers crossing."
-- "I should compare in lowercase, not modify the original string."
-
-## 6. VISUAL WALKTHROUGH
-
-### Input: `"A man, a plan, a canal: Panama"`
-
-```
-Pointer positions (skipping non-alphanumeric):
-
-Step 1: left=0('A') vs right=29('a')  → 'a' == 'a' ✓
-Step 2: left=2('m') vs right=27('m')  → 'm' == 'm' ✓
-Step 3: left=3('a') vs right=26('a')  → 'a' == 'a' ✓
-Step 4: left=4('n') vs right=24('n')  → 'n' == 'n' ✓
-...continues matching...
-Pointers meet in the middle → return true
-```
-
-### Input: `"race a car"`
-
-```
-Step 1: left=0('r') vs right=9('r')  → 'r' == 'r' ✓
-Step 2: left=1('a') vs right=8('a')  → 'a' == 'a' ✓
-Step 3: left=2('c') vs right=7('c')  → 'c' == 'c' ✓
-Step 4: left=3('e') vs right=5('a')  → 'e' != 'a' ✗ → return false
-```
-
-### Input: `" "` (space only)
+"Let me check the edge case: `' '` (space only)."
 
 ```
 left=0, right=0
@@ -137,18 +149,11 @@ left(1) < right(0) is false → while loop doesn't run
 return true (empty after skipping = palindrome)
 ```
 
-## 7. EDGE CASES
-
-- Empty after cleaning: `" "` → true (empty string is a palindrome)
-- Single character: `"a"` → true
-- Only non-alphanumeric: `".,!"` → true
-- Digits included: `"0P"` → false (`'0'` != `'p'`)
-- Mixed digits and letters: `"a1b1a"` → true
-- All same characters: `"aaaa"` → true
-- Two characters match: `"ab"` → false
-- Case difference: `"Aa"` → true
-
-## 8. TEST CASES
+**More edge cases verified:**
+- `"a"` → left=0, right=0, left < right is false → return true ✓
+- `".,!"` → both pointers skip everything, pointers cross → return true ✓
+- `"0P"` → '0' != 'p' → return false ✓
+- `"Aa"` → 'a' == 'a' → return true ✓
 
 ```typescript
 console.log(isPalindrome("A man, a plan, a canal: Panama") === true,  "Test 1: classic palindrome");
@@ -162,11 +167,38 @@ console.log(isPalindrome("a1b1a") === true,                           "Test 8: m
 console.log(isPalindrome("ab") === false,                             "Test 9: two different chars");
 ```
 
-## 9. VARIATIONS
+## E - Evaluate（評価）
+
+### Two-Pointer Approach
+
+**Time: O(n)**
+- "Each pointer goes through the string at most once, so it's linear."
+
+**Space: O(1)**
+- "I only use two pointer variables. No extra strings or arrays."
+
+### Brute Force Approach
+
+**Time: O(n)**
+- "Cleaning, reversing, and comparing are all O(n)."
+
+**Space: O(n)**
+- "I make a cleaned string and a reversed copy."
+
+**Why two pointers?**
+- Same time as brute force, but O(1) space instead of O(n).
+- "In interviews, I'd mention the brute force first, then optimize with two pointers."
+
+**Common mistakes to watch for:**
+- "I need to skip non-alphanumeric characters from both sides."
+- "I must check `left < right` inside the inner while loops too, to stop the pointers from crossing."
+- "I should compare in lowercase, not change the original string."
+
+## VARIATIONS
 
 ### A. Without Helper Function (charCodeAt)
 
-Instead of regex, use character codes for better performance:
+Instead of regex, use character codes for better speed:
 
 ```typescript
 function isPalindromeCharCode(s: string): boolean {
@@ -198,7 +230,7 @@ function toLower(code: number): number {
 }
 ```
 
-Why? Regex creates a RegExp object per call. charCodeAt is a direct number comparison — faster in tight loops.
+Why? Regex makes a RegExp object per call. charCodeAt is a direct number check — faster in tight loops.
 
 ### B. Recursive Approach
 
@@ -215,32 +247,32 @@ function isPalindromeRecursive(s: string, left = 0, right = s.length - 1): boole
 
 Time O(n), Space O(n) due to call stack. Not recommended — just for understanding recursion.
 
-## 10. WHEN TO USE WHICH
+## WHEN TO USE WHICH
 
-**Q: When should I use the two-pointer technique?**
-A: When the problem involves comparing elements from both ends of a linear structure (array, string). Classic signals: "palindrome", "two sum in sorted array", "container with most water".
+**Q: When should I use two pointers?**
+A: When comparing elements from both ends of a string or array. Classic signals: "palindrome", "two sum in sorted array", "container with most water".
 
 **Q: Brute force (clean + reverse) vs two-pointer?**
-A: Both are O(n) time. Two-pointer is O(1) space vs O(n) space. In interviews, mention the brute force first as a baseline, then optimize with two pointers.
+A: Both are O(n) time. Two-pointer is O(1) space vs O(n) space. In interviews, mention brute force first, then optimize.
 
 **Q: Regex vs charCodeAt for checking alphanumeric?**
-A: Regex is more readable. charCodeAt is faster. In interviews, regex is fine — mention charCodeAt as an optimization if asked about performance.
+A: Regex is easier to read. charCodeAt is faster. In interviews, regex is fine. Mention charCodeAt if asked about speed.
 
-## 11. COMMON INTERVIEW QUESTIONS
+## COMMON INTERVIEW QUESTIONS
 
 **Q: Why two pointers instead of cleaning the string first?**
-A: "Cleaning the string requires O(n) extra space. Two pointers work in-place with O(1) space. The time complexity is the same."
+A: "Cleaning the string needs O(n) extra space. Two pointers work in-place with O(1) space. The time is the same."
 
-**Q: What if we need to consider Unicode characters?**
-A: "The current solution works for ASCII. For Unicode, I'd need a more robust alphanumeric check, possibly using a library or Unicode-aware regex like `/\p{L}|\p{N}/u`."
+**Q: What if we need to handle Unicode characters?**
+A: "This solution works for ASCII. For Unicode, I'd need a better check, maybe using Unicode-aware regex like `/\p{L}|\p{N}/u`."
 
 **Q: Can you solve this without any built-in string methods?**
-A: "Yes, I'd use charCodeAt to compare character codes directly — checking ranges for 0-9, A-Z, a-z manually."
+A: "Yes, I'd use charCodeAt to compare character codes directly — checking ranges for 0-9, A-Z, a-z by hand."
 
 **Q: What's the difference between this and LeetCode 680 (Valid Palindrome II)?**
-A: "In 680, you're allowed to remove at most one character. So when a mismatch is found, you try skipping left or right and check if either remaining substring is a palindrome."
+A: "In 680, you can remove at most one character. When a mismatch is found, you try skipping left or right and check if either remaining part is a palindrome."
 
-## 12. RELATED PROBLEMS
+## RELATED PROBLEMS
 
 - LeetCode 680: Valid Palindrome II (Easy) — Can remove at most one character
 - LeetCode 234: Palindrome Linked List (Easy) — Two pointers on linked list
@@ -248,7 +280,7 @@ A: "In 680, you're allowed to remove at most one character. So when a mismatch i
 - LeetCode 5: Longest Palindromic Substring (Medium) — Find longest palindrome in string
 - LeetCode 647: Palindromic Substrings (Medium) — Count all palindromic substrings
 
-## 13. HOW TO READ CODE ALOUD
+## HOW TO READ CODE ALOUD
 
 **Code Symbols:**
 - `s[left]` → "s at left" or "the character at index left"

@@ -1,30 +1,89 @@
-# LeetCode 678. Valid Parenthesis String
+# LeetCode 678. Valid Parenthesis String (Medium)
 
 https://leetcode.com/problems/valid-parenthesis-string/
 
-## 1. PROBLEM UNDERSTANDING
+## U - Understand（問題の理解）
 
 - **What**: Check if a string with `(`, `)`, and `*` is valid. `*` can be `(`, `)`, or empty.
 - **Input**: A string `s` with only `(`, `)`, `*`
-- **Output**: `true` if the string is valid, `false` otherwise
-- **Constraints**:
-  - 1 <= s.length <= 100
-  - s[i] is `(`, `)`, or `*`
-- **Key insight**: We don't know what each `*` will become. But we can track the **range** of possible open parentheses count (low to high). If 0 is always in that range, it's valid.
+- **Output**: `true` if the string can be valid, `false` otherwise
 
-## 2. APPROACH (面接で話す流れ)
+**Clarifying Questions:**
+- "Can the string be empty?" (Yes, and it's valid)
+- "Is the string only `(`, `)`, and `*`?" (Yes)
+- "Can `*` be treated as empty — meaning we just ignore it?" (Yes)
 
-"The tricky part is that `*` can be three things. Instead of trying all combinations, I'll track the **range** of possible open parenthesis counts."
+**Constraints:**
+- 1 <= s.length <= 100
+- s[i] is `(`, `)`, or `*`
 
-"I use two variables: `low` and `high`. `low` is the minimum possible open count, `high` is the maximum."
+**Test Cases:**
+
+1. **Happy Path**: `"()"` → `true` (basic valid parentheses)
+2. **Happy Path**: `"(*)"` → `true` (star becomes empty)
+3. **Happy Path**: `"(*))"` → `true` (star becomes `(`)
+4. **Edge Case**: `")("` → `false` (order matters, can't fix)
+5. **Edge Case**: `"***"` → `true` (all become empty)
+6. **Edge Case**: `"*"` → `true` (becomes empty)
+7. **Constraint**: `"((("` → `false` (low=3 at end, not 0)
+
+## M - Match（パターンマッチ）
+
+**Pattern: Greedy with Range Tracking (low/high)**
+
+"I think we can track the range of possible open parenthesis counts."
+
+Why this pattern?
+- We don't know what each `*` becomes.
+- Brute force tries all combinations → O(3^n). Too slow.
+- Instead, we track the minimum and maximum possible open count.
+- If 0 is in the range at the end, a valid choice exists.
+
+## P - Plan（プラン立て）
+
+"Let me think about the steps."
+
+"I use two variables: `low` and `high`. `low` is the minimum possible open count. `high` is the maximum."
 
 "For `(`, both go up by 1. For `)`, both go down by 1. For `*`, `low` goes down (treat as `)`) and `high` goes up (treat as `(`)."
 
-"If `high` drops below 0, we have too many `)` — return false. If `low` drops below 0, we just reset it to 0, because we'd never choose to go negative."
+"If `high` goes below 0, too many `)` — return false. If `low` goes below 0, I reset it to 0. We'd never choose to go negative."
 
-"At the end, if `low` is 0, it means there's a valid way to match everything."
+"At the end, if `low` is 0, it means we can match everything."
 
-## 3. SOLUTION
+**Pseudocode:**
+```
+// set low = 0, high = 0
+// for each character c:
+//   if c == '(': low++, high++
+//   if c == ')': low--, high--
+//   if c == '*': low-- (as ')'), high++ (as '(')
+//   if high < 0: return false (too many ')')
+//   if low < 0: low = 0 (don't go negative)
+// return low == 0
+```
+
+```mermaid
+flowchart TD
+    A[Start: low = 0, high = 0] --> B[For each char c]
+    B --> C{c is?}
+    C -->|'('| D[low++, high++]
+    C -->|')'| E[low--, high--]
+    C -->|'*'| F[low--, high++]
+    D --> G{high < 0?}
+    E --> G
+    F --> G
+    G -->|Yes| H[Return false]
+    G -->|No| I{low < 0?}
+    I -->|Yes| J[low = 0] --> B
+    I -->|No| B
+    B --> K{All done?}
+    K -->|Yes| L{low == 0?}
+    L -->|Yes| M[Return true]
+    L -->|No| H
+```
+
+## I - Implement（実装）
 
 ```typescript
 function checkValidString(s: string): boolean {
@@ -51,50 +110,19 @@ function checkValidString(s: string): boolean {
 }
 ```
 
-## 4. COMPLEXITY (必ず聞かれる)
+## R - Review（振り返り）
 
-**Time: O(n)**
-- "We scan the string once, doing O(1) work per character."
+"Let me walk through Test Case 3: `(*))`."
 
-**Space: O(1)**
-- "We only use two variables: low and high."
+| Step | char | low | high | Note |
+|------|------|-----|------|------|
+| start | - | 0 | 0 | |
+| 1 | `(` | **1** | **1** | both go up |
+| 2 | `*` | **0** | **2** | low-- (as `)`) , high++ (as `(`) |
+| 3 | `)` | 0 | **1** | low was -1 → reset to 0 |
+| 4 | `)` | 0 | **0** | both go down |
 
-## 5. KEY PHRASES (面接で使える英語)
-
-**Clarifying questions:**
-- "Can the string be empty?" (Yes, and it's valid)
-- "Is the string only `(`, `)`, and `*`?" (Yes)
-- "Can `*` be treated as an empty string — meaning we just ignore it?" (Yes)
-
-**Explaining approach:**
-- "I'll track the range of possible open parenthesis counts"
-- "low is the best case — we close as many as we can. high is the worst case — we open as many as we can"
-- "If high goes below zero, there's no way to fix it, so we return false"
-- "If low goes below zero, we reset it to zero because we'd never choose a negative count"
-
-**Explaining complexity:**
-- "Time is O(n) — one pass through the string"
-- "Space is O(1) — just two integer variables"
-
-## 6. VISUAL WALKTHROUGH
-
-**Example: `(*))`**
-
-```
-Character by character:
-
-    char    low    high    note
-    ──────────────────────────────────
-start  -     0      0
-  '('        1      1     both go up
-  '*'        0      2     low-- (as ')'), high++ (as '(')
-  ')'       -1      1     both go down → low < 0, reset to 0
-  ')'        0*     0     both go down
-
-                          * low was reset from -1 to 0
-
-low == 0 → return true ✓
-```
+low == 0 → return **true** ✓
 
 **What does the range mean?**
 
@@ -110,7 +138,7 @@ This means open count could be 0, 1, or 2:
 Any value from low to high is reachable!
 ```
 
-**Example: `(*))` — how does it actually match?**
+**How does `(*))`  actually match?**
 
 ```
 (  *  )  )
@@ -123,27 +151,19 @@ Any value from low to high is reachable!
 Result: ( ( ) )  ← valid!
 ```
 
-**Example that fails: `)(`**
+"Let me check an example that fails: `)(`."
 
-```
-    char    low    high
-    ────────────────────
-start  -     0      0
-  ')'       -1     -1    high < 0 → return false ✗
-```
+| Step | char | low | high | Note |
+|------|------|-----|------|------|
+| start | - | 0 | 0 | |
+| 1 | `)` | -1 | **-1** | high < 0 → return **false** |
 
 Even `*` can't save us if high goes negative.
 
-## 7. EDGE CASES
-
-- Empty-like: `"***"` → all become empty → true
-- All open: `"((("` → low=3, high=3, low != 0 → false
-- All close: `")))"` → high goes negative on first char → false
-- Single star: `"*"` → low=0, high=1, low=0 → true
-- Star saves: `"(*)"` → true (star becomes empty)
-- Star can't save: `")("` → high < 0 at first char → false
-
-## 8. TEST CASES
+"Let me also check other edge cases."
+- `"***"` → low goes to -3 (reset to 0 each time), high goes to 3, final low=0 → true ✓
+- `"((("` → low=3, high=3, low != 0 → false ✓
+- `"*"` → low=-1 reset to 0, high=1, low=0 → true ✓
 
 ```typescript
 console.log("Test 1:", checkValidString("()"));
@@ -171,7 +191,27 @@ console.log("Test 8:", checkValidString("*"));
 // Expected: true
 ```
 
-## 9. REAL-WORLD ANALOGY (バスの乗降)
+## E - Evaluate（評価）
+
+**Time: O(n)**
+- "I go through the string once. I do O(1) work per character."
+
+**Space: O(1)**
+- "I only use two variables: low and high."
+
+**Why this approach?**
+- Greedy range tracking solves it in one pass.
+- Brute force tries all 3^n combinations — way too slow.
+- "By tracking the range, I know if a valid choice exists without trying every possibility."
+
+**Trade-off:**
+| | Range Tracking | Two-Pass | Brute Force |
+|---|---|---|---|
+| Time | O(n) | O(n) | O(3^n) |
+| Space | O(1) | O(1) | O(n) |
+| Idea | Track low/high | Check each direction | Try all combos |
+
+## REAL-WORLD ANALOGY (バスの乗降)
 
 **バスが停留所を順番に回る。最後に乗客を0人にできるか？**
 
@@ -201,9 +241,9 @@ max = 最多で何人乗ってるか
 | `min < 0` → reset to 0 | 乗客がマイナスはありえない。その選び方をしないだけ |
 | `min === 0` at the end | 全員降ろせるパターンがある = valid |
 
-## 10. WHY "RANGE" WORKS (なぜ範囲追跡で解けるのか)
+## WHY "RANGE" WORKS (なぜ範囲追跡で解けるのか)
 
-The key idea is: **we don't need to know what each `*` becomes — we just need to know if a valid assignment exists.**
+The key idea: **we don't need to know what each `*` becomes — we just need to know if a valid choice exists.**
 
 ```
 Without range (brute force):
@@ -230,12 +270,12 @@ If low <= 0 <= high → 0 is reachable → valid
 (We keep low >= 0, so just check low == 0)
 ```
 
-## 11. ALTERNATIVE: TWO-PASS APPROACH
+## ALTERNATIVE: TWO-PASS APPROACH
 
 Another way to think about this:
 
 ```typescript
-function checkValidString(s: string): boolean {
+function checkValidStringTwoPass(s: string): boolean {
     // Left to right: check for too many ')'
     let open = 0;
     for (const c of s) {
@@ -261,28 +301,28 @@ function checkValidString(s: string): boolean {
 
 Both are O(n) time, O(1) space.
 
-## 12. COMMON INTERVIEW QUESTIONS
+## COMMON INTERVIEW QUESTIONS
 
 **Q: Why not just count `(` and `)` and see if they match?**
-A: Order matters. `)(` has equal counts but is invalid. We need to check left-to-right.
+A: "Order matters. `)(` has equal counts but is not valid. I need to check left-to-right."
 
 **Q: Why reset low to 0?**
-A: `low` represents the minimum possible open count. Open count can never be negative in a real string — you can't have more `)` than `(` so far. So if `low` goes negative, it means "in the best case, we'd choose `*` as `(` to avoid going negative." We clamp it to 0.
+A: "`low` is the minimum possible open count. Open count can never be negative — you can't have more `)` than `(` so far. If `low` goes negative, we'd choose `*` as `(` to avoid it. So I clamp it to 0."
 
 **Q: Why does high < 0 mean invalid?**
-A: `high` is the maximum possible open count — even if every `*` becomes `(`. If even the maximum goes negative, there's no way to avoid having unmatched `)`. No assignment of `*` can fix it.
+A: "`high` is the maximum possible open count — even if every `*` becomes `(`. If even the max goes negative, no choice of `*` can fix it."
 
 **Q: Is this greedy?**
-A: Yes. We greedily track the range instead of trying all possibilities. The range always stays correct because `low` and `high` move in predictable ways.
+A: "Yes. I greedily track the range instead of trying all choices. The range stays correct because `low` and `high` move in predictable ways."
 
-## 13. RELATED PROBLEMS
+## RELATED PROBLEMS
 
 - LeetCode 20. Valid Parentheses (basic version, no `*`)
 - LeetCode 32. Longest Valid Parentheses
 - LeetCode 921. Minimum Add to Make Parentheses Valid
 - LeetCode 1249. Minimum Remove to Make Valid Parentheses
 
-## 14. HOW TO READ CODE ALOUD (口頭での読み方)
+## HOW TO READ CODE ALOUD
 
 **Key variables:**
 - `low` → "low" (minimum possible open count)

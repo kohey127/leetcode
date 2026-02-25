@@ -14,58 +14,121 @@
 問題の解説ファイル（`*_solution.md`）を作成する際は、以下のセクション構成でMarkdownファイルとして作成すること。
 コード部分は ```typescript コードブロックで記述する。
 
+### UMPIREフレームワーク
+
+解説ファイルはUMPIRE（Understand → Match → Plan → Implement → Review → Evaluate）に沿って構成する。
+北米技術面接で評価されるのは「解けるかどうか」ではなく「問題解決のアプローチと思考プロセス」。
+UMPIREの流れに沿うことで、解説を読む＝面接の思考プロセスをシミュレーションできるようにする。
+
+各セクションでは面接官に話すフレーズを自然に含めること（例: "Let me clarify...", "I think we can use...", "Let me walk through this with an example..."）。
+
 ### 必須セクション（全問題共通）
 
 ```markdown
-# LeetCode [番号]. [問題名]
+# LeetCode [番号]. [問題名] ([難易度: Easy/Medium/Hard])
 [URL]
 
-## 1. PROBLEM UNDERSTANDING
-What, Input, Output, Constraints, Key insight
+## U - Understand（問題の理解）
+- What / Input / Output
+- Clarifying Questions（面接官への質問例）
+- Constraints
+- 【必須】テストケースを最低2つ作る。以下の3観点を必ずカバー:
+  1. **Happy Path**（正常系・典型的な入力）
+  2. **Edge Case**（境界値・特殊な入力）
+  3. **Constraint**（制約に関わるケース）
+  ※ テストケースの作成が「理解」のゴール。面接官と認識をすり合わせる。
 
-## 2. APPROACH (面接で話す流れ)
-英語で、面接官に説明するように自然な英語で
+## M - Match（パターンマッチ）
+- この問題に当てはまるパターン（例: Hash Map, Two Pointers）
+- なぜそのパターンを選んだか
 
-## 3. SOLUTION
-動作するTypeScriptコード（```typescript コードブロック内）
+## P - Plan（プラン立て）
+- 面接官に話すように思考プロセスを言語化
+- Pseudocode（コメントで書く下書き）
+  ※ 「プラン → Pseudocode → コード」の順。思考プロセスを口に出すのが最重要。
 
-## 4. COMPLEXITY (必ず聞かれる)
-Time: O(?) - 理由を英語で
-Space: O(?) - 理由を英語で
+## I - Implement（実装）
+- TypeScriptコード（```typescript コードブロック内）
 
-## 5. KEY PHRASES (面接で使える英語)
-Clarifying questions, Explaining approach, Explaining complexity
+## R - Review（振り返り）
+- Uで作ったテストケースをline-by-lineで実行してデバッグ
+  ※ コードを書いた後のReviewはテストケース作成に次いで最重要
 
-## 6. VISUAL WALKTHROUGH
-具体例でアルゴリズムの動きを視覚的に示す
-
-## 7. EDGE CASES
-境界ケースのリスト
-
-## 8. TEST CASES
-テストケース（```typescript コードブロック内）
+## E - Evaluate（評価）
+- Time / Space Complexity（理由付き）
+- このアプローチを選んだ理由
+- メリット・デメリット（他のアプローチとの比較があれば）
 ```
 
 ### 追加セクション（トピックに応じて）
 
 ```markdown
-## 9. VARIATIONS (バリエーション)
+## VARIATIONS (バリエーション)
 このアルゴリズムの派生パターン（例：Binary Searchなら Lower/Upper Bound）
 
-## 10. WHEN TO USE WHICH (使い分け)
+## WHEN TO USE WHICH (使い分け)
 Q&A形式でパターンの使い分けを説明
 
-## 11. COMMON INTERVIEW QUESTIONS
+## COMMON INTERVIEW QUESTIONS
 よくある質問と回答（Q&A形式）
 
-## 12. RELATED PROBLEMS
+## RELATED PROBLEMS
 関連するLeetCode問題のリスト
 
-## 13. HOW TO READ CODE ALOUD (口頭での読み方)
+## HOW TO READ CODE ALOUD (口頭での読み方)
 コード・記号の英語での読み方
 計算量の読み方（O(log n) → "O of log n"）
 例を使った説明スクリプト
 ```
+
+### 可視化ガイドライン
+
+解説ファイルの図解には **Mermaid** と **Markdownテーブル** を使い分ける。MCP等の外部ツールは不要（GitHubが```mermaidを直接レンダリングする）。
+
+#### P - Plan セクション
+
+アルゴリズムに分岐ロジックがある場合は ```mermaid flowchart で図示する:
+
+````markdown
+```mermaid
+flowchart TD
+    A[Start] --> B{Condition?}
+    B -->|Yes| C[Action A]
+    B -->|No| D[Action B]
+```
+````
+
+**Mermaidを使う場面:**
+- アルゴリズムの分岐ロジック（if/else/while の構造）
+- ツリー・グラフの構造図
+- 再帰の呼び出し順序
+
+#### R - Review セクション
+
+状態変化はMarkdownテーブルで整理する。1行に1操作。変化した値を **bold** でハイライト:
+
+```markdown
+| Step | i | Action | Stack | answer |
+|------|---|--------|-------|--------|
+| 1 | 0 | push 0 | `[0]` | [0,0,0] |
+| 2 | 1 | pop 0, ans[0]=1 | `[]` | [**1**,0,0] |
+```
+
+**テーブルを使う場面（R - Review）:**
+- 配列・ポインタの状態変化
+- スタック・キューの操作
+- Binary Searchの範囲縮小
+- Linked Listの状態変化（テーブル＋補助ASCII art）
+
+**ASCII artを残す場面:**
+- 価格チャート・値の分布グラフ（視覚的に有効）
+- Linked Listのポインタ付け替え図（矢印が直感的）
+- 配列上のポインタ位置表示（L/R/mid等）
+
+**ルール:**
+- 1ステップに1操作だけ
+- ステップ間に空行は不要（テーブルが区切りの役割を果たす）
+- ハイライト記号を統一: 変化した値は **bold**、確認は ✓
 
 ### 参考例
 

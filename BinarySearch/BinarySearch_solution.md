@@ -1,36 +1,83 @@
-# LeetCode 704. Binary Search
+# LeetCode 704. Binary Search (Easy)
 
 https://leetcode.com/problems/binary-search/
 
-## 1. PROBLEM UNDERSTANDING
+## U - Understand（問題の理解）
 
 - **What**: Find target value in a sorted array
 - **Input**: sorted array of integers (nums), target number
 - **Output**: index of target, or -1 if not found
-- **Constraints**:
-  - Array is sorted in ascending order
-  - All integers are unique
-  - Must achieve O(log n) runtime
-- **Key insight**: "sorted array" + "O(log n)" = Binary Search
 
-## 2. APPROACH (面接で話す流れ)
+**Clarifying Questions:**
+- "Let me clarify - the array is already sorted, correct?"
+- "Are all elements unique, or could there be duplicates?"
+- "Should I return any valid index if there are duplicates?"
 
-"Since the array is sorted and we need O(log n) complexity,
-I'll use binary search."
+**Constraints:**
+- Array is sorted in ascending order
+- All integers are unique
+- Must achieve O(log n) runtime
 
-"I'll maintain two pointers, left and right, representing
-the current search range."
+**Test Cases:**
 
-"In each iteration, I'll:
-1. Calculate the middle index
+1. **Happy Path**: `[-1, 0, 3, 5, 9, 12]`, target = `9` → `4`
+2. **Happy Path**: `[-1, 0, 3, 5, 9, 12]`, target = `2` → `-1` (not found)
+3. **Edge Case**: `[5]`, target = `5` → `0` (single element, found)
+4. **Edge Case**: `[5]`, target = `3` → `-1` (single element, not found)
+5. **Constraint**: `[1, 2, 3, 4, 5]`, target = `1` → `0` (target at the beginning)
+6. **Constraint**: `[1, 2, 3, 4, 5]`, target = `5` → `4` (target at the end)
+
+## M - Match（パターンマッチ）
+
+**Pattern: Binary Search**
+
+"I think we can use binary search here."
+
+Why this pattern?
+- The array is sorted. That is the biggest hint.
+- The problem says O(log n) runtime. Binary search gives O(log n).
+- We can cut the search space in half each time by comparing the middle element with the target.
+
+## P - Plan（プラン立て）
+
+"Since the array is sorted and we need O(log n), I'll use binary search."
+
+"I'll keep two pointers, left and right, for the search range."
+
+"In each step, I:
+1. Find the middle index
 2. Compare nums[mid] with target
 3. If equal, return mid
 4. If nums[mid] < target, search the right half
 5. If nums[mid] > target, search the left half"
 
-"I'll continue until left > right, which means target is not found."
+"I keep going until left > right. Then the target is not found."
 
-## 3. SOLUTION
+**Flowchart:**
+
+```mermaid
+flowchart TD
+    A[Start: left = 0, right = n-1] --> B{left <= right?}
+    B -->|No| F[Return -1]
+    B -->|Yes| C[mid = floor of left+right / 2]
+    C --> D{nums mid vs target?}
+    D -->|Equal| E[Return mid]
+    D -->|Less| G[left = mid + 1] --> B
+    D -->|Greater| H[right = mid - 1] --> B
+```
+
+**Pseudocode:**
+```
+// set left = 0, right = nums.length - 1
+// while left <= right:
+//   mid = floor((left + right) / 2)
+//   if nums[mid] === target → return mid
+//   if nums[mid] < target → left = mid + 1
+//   if nums[mid] > target → right = mid - 1
+// return -1 (not found)
+```
+
+## I - Implement（実装）
 
 ```typescript
 function search(nums: number[], target: number): number {
@@ -59,60 +106,23 @@ function search(nums: number[], target: number): number {
 }
 ```
 
-## 4. COMPLEXITY (必ず聞かれる)
+## R - Review（振り返り）
 
-**Time: O(log n)**
-- "We halve the search space in each iteration"
-- "So we need at most log2(n) iterations"
+"Let me walk through Test Case 1: `[-1, 0, 3, 5, 9, 12]`, target = `9`."
 
-**Space: O(1)**
-- "We only use a constant number of variables (left, right, mid)"
-- "No additional data structures needed"
+| Step | left | right | mid | nums[mid] | Action | Result |
+|------|------|-------|-----|-----------|--------|--------|
+| 1 | 0 | 5 | 2 | 3 | 3 < 9 → go right | left = **3** |
+| 2 | 3 | 5 | 4 | 9 | 9 === 9 → found! | return **4** |
 
-## 5. KEY PHRASES (面接で使える英語)
+"Let me also check the edge cases."
 
-**Clarifying questions:**
-- "Let me clarify - the array is already sorted, correct?"
-- "Are all elements unique, or could there be duplicates?"
-- "Should I return any valid index if there are duplicates?"
+- **Single element, found** (`[5]`, target=5): left=0, right=0, mid=0. nums[0]=5 === 5 → return 0. Correct.
+- **Single element, not found** (`[5]`, target=3): left=0, right=0, mid=0. nums[0]=5 > 3 → right = -1. Loop ends → return -1. Correct.
+- **Target at beginning** (`[1,2,3,4,5]`, target=1): mid=2, nums[2]=3 > 1 → right=1. mid=0, nums[0]=1 === 1 → return 0. Correct.
+- **Target at end** (`[1,2,3,4,5]`, target=5): mid=2, nums[2]=3 < 5 → left=3. mid=4, nums[4]=5 === 5 → return 4. Correct.
 
-**Explaining approach:**
-- "My approach is to use binary search"
-- "I'll use two pointers to track the search range"
-- "I'll compare the middle element with the target"
-
-**Explaining complexity:**
-- "The time complexity is O(log n) because we halve the search space each time"
-- "The space complexity is O(1) since we only use constant extra space"
-
-**Common mistakes to mention:**
-- "I need to be careful with the boundary conditions"
-- "The condition should be left <= right, not left < right"
-- "When moving pointers, it's mid + 1 and mid - 1, not just mid"
-
-## 6. VISUAL WALKTHROUGH
-
-nums = [-1, 0, 3, 5, 9, 12], target = 9
-
-**Iteration 1:**
-- left=0, right=5, mid=2
-- nums[2]=3 < 9, so search right half
-- left = 3
-
-**Iteration 2:**
-- left=3, right=5, mid=4
-- nums[4]=9 === 9, found!
-- return 4
-
-## 7. EDGE CASES
-
-- Target at the beginning: [1,2,3], target=1 -> 0
-- Target at the end: [1,2,3], target=3 -> 2
-- Single element (found): [5], target=5 -> 0
-- Single element (not found): [5], target=3 -> -1
-- Target not in array: [1,2,3], target=4 -> -1
-
-## 8. TEST CASES
+"I need to be careful with the boundary conditions. The condition should be `left <= right`, not `left < right`. When moving pointers, it's `mid + 1` and `mid - 1`, not just `mid`."
 
 ```typescript
 console.log("Test 1:", search([-1, 0, 3, 5, 9, 12], 9));  // Expected: 4
@@ -122,3 +132,25 @@ console.log("Test 4:", search([5], 3));                   // Expected: -1 (singl
 console.log("Test 5:", search([1, 2, 3, 4, 5], 1));       // Expected: 0 (target at beginning)
 console.log("Test 6:", search([1, 2, 3, 4, 5], 5));       // Expected: 4 (target at end)
 ```
+
+## E - Evaluate（評価）
+
+**Time: O(log n)**
+- "Time is O(log n) because we halve the search space each time."
+- "So we need at most log2(n) steps."
+
+**Space: O(1)**
+- "Space is O(1) since we only use a few variables (left, right, mid)."
+
+**Why this approach?**
+- "sorted array" + "O(log n)" = binary search. There is no other choice.
+- Iterative is simple and uses O(1) space.
+
+**Trade-off:**
+| | Iterative | Recursive |
+|---|---|---|
+| Time | O(log n) | O(log n) |
+| Space | O(1) | O(log n) |
+| Readability | Easy | A bit tricky |
+
+→ "Iterative is better because of O(1) space."

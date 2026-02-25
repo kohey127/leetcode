@@ -1,32 +1,75 @@
-# LeetCode 206. Reverse Linked List
+# LeetCode 206. Reverse Linked List (Easy)
 
 https://leetcode.com/problems/reverse-linked-list/
 
-## 1. PROBLEM UNDERSTANDING
+## U - Understand（問題の理解）
 
 - **What**: Reverse a singly linked list
 - **Input**: head of a linked list
 - **Output**: head of the reversed list
-- **Constraints**:
-  - 0 to 5000 nodes
-  - Node values: -5000 to 5000
-- **Key insight**: We change the direction of each arrow. Each node should point to its previous node, not the next one.
 
-## 2. APPROACH (面接で話す流れ)
+**Clarifying Questions:**
+- "Can the list be empty?" → Yes, 0 nodes is possible.
+- "Should I reverse it in-place, or can I make a new list?" → In-place is better.
 
-"I'll use an iterative approach with three pointers."
+**Constraints:**
+- 0 to 5000 nodes
+- Node values: -5000 to 5000
 
-"I need `prev`, `curr`, and `next`.
-I go through the list and flip each arrow one by one."
+**Test Cases:**
+
+1. **Happy Path**: `[1, 2, 3, 4, 5]` → `[5, 4, 3, 2, 1]`
+2. **Edge Case**: `[]` → `[]` (empty list)
+3. **Edge Case**: `[1]` → `[1]` (single node, no change)
+4. **Constraint**: `[1, 2]` → `[2, 1]` (smallest list that actually changes)
+
+## M - Match（パターンマッチ）
+
+**Pattern: Iterative pointer manipulation**
+
+"I think we can use three pointers: `prev`, `curr`, and `next`."
+
+Why this pattern?
+- We need to change the direction of each arrow.
+- Each node should point to its previous node, not the next one.
+- Three pointers let us flip one arrow at a time without losing the rest of the list.
+
+## P - Plan（プラン立て）
+
+"Let me think about the steps."
+
+"I go through the list and flip each arrow one by one."
 
 "For each node, I:
-1. Save the next node
-2. Point the current node to prev
+1. Save the next node (so I don't lose it)
+2. Point the current node to prev (flip the arrow)
 3. Move prev and curr forward"
 
 "When curr is null, prev is the new head."
 
-## 3. SOLUTION
+**Pseudocode:**
+```
+// set prev = null, curr = head
+// while curr is not null:
+//   save next = curr.next
+//   flip: curr.next = prev
+//   move: prev = curr
+//   move: curr = next
+// return prev (new head)
+```
+
+**Flowchart:**
+
+```mermaid
+flowchart TD
+    A[Start: prev = null, curr = head] --> B{curr != null?}
+    B -->|No| F[Return prev]
+    B -->|Yes| C[next = curr.next]
+    C --> D[curr.next = prev]
+    D --> E[prev = curr, curr = next] --> B
+```
+
+## I - Implement（実装）
 
 ```typescript
 function reverseList(head: ListNode | null): ListNode | null {
@@ -44,93 +87,42 @@ function reverseList(head: ListNode | null): ListNode | null {
 }
 ```
 
-## 4. COMPLEXITY (必ず聞かれる)
+## R - Review（振り返り）
 
-**Time: O(n)**
-- "I visit each node once."
-- "n is the number of nodes."
+"Let me walk through this with Test Case 1: `[1, 2, 3, 4, 5]`."
 
-**Space: O(1)**
-- "I only use three pointers: prev, curr, next."
-- "No extra data structures."
+**Summary table:**
 
-## 5. KEY PHRASES (面接で使える英語)
+| Step | curr | next = curr.next | Flip: curr.next = | prev → | curr → |
+|------|------|-----------------|-------------------|--------|--------|
+| 1 | 1 | 2 | null | **1** | **2** |
+| 2 | 2 | 3 | 1 | **2** | **3** |
+| 3 | 3 | 4 | 2 | **3** | **4** |
+| 4 | 4 | 5 | 3 | **4** | **5** |
+| 5 | 5 | null | 4 | **5** | **null** |
 
-**Clarifying questions:**
-- "Can the list be empty?"
-- "Should I reverse it in-place, or can I make a new list?"
+Done! curr is null → return prev (node **5**)
 
-**Explaining approach:**
-- "I'll use three pointers to reverse the links one by one."
-- "I save the next node first, then flip the arrow."
-- "When I reach the end, prev is the new head."
-
-**Explaining complexity:**
-- "Time is O(n) because I go through each node once."
-- "Space is O(1) because I only use a few pointers."
-
-## 6. VISUAL WALKTHROUGH
+**Key steps visualized:**
 
 ```
-Input: 1 -> 2 -> 3 -> 4 -> 5 -> null
-
-Step 0: Start
-  prev = null
-  curr = 1
-
 Step 1: Flip node 1
-  next = 2          (save)
-  1.next = null     (flip arrow: 1 -> null)
-  prev = 1, curr = 2
-
   null <- 1    2 -> 3 -> 4 -> 5 -> null
          prev  curr
 
-Step 2: Flip node 2
-  next = 3          (save)
-  2.next = 1        (flip arrow: 2 -> 1)
-  prev = 2, curr = 3
-
-  null <- 1 <- 2    3 -> 4 -> 5 -> null
-               prev  curr
-
 Step 3: Flip node 3
-  next = 4          (save)
-  3.next = 2        (flip arrow: 3 -> 2)
-  prev = 3, curr = 4
-
   null <- 1 <- 2 <- 3    4 -> 5 -> null
                     prev  curr
 
-Step 4: Flip node 4
-  next = 5          (save)
-  4.next = 3        (flip arrow: 4 -> 3)
-  prev = 4, curr = 5
-
-  null <- 1 <- 2 <- 3 <- 4    5 -> null
-                         prev  curr
-
-Step 5: Flip node 5
-  next = null       (save)
-  5.next = 4        (flip arrow: 5 -> 4)
-  prev = 5, curr = null
-
+Step 5: Done!
   null <- 1 <- 2 <- 3 <- 4 <- 5
                               prev  curr = null
-
-Done! Return prev (node 5) = new head
-
-Output: 5 -> 4 -> 3 -> 2 -> 1 -> null
 ```
 
-## 7. EDGE CASES
+"Let me also check Edge Cases."
 
-- Empty list: head = null -> return null
-- Single node: [1] -> [1] (no change)
-- Two nodes: [1,2] -> [2,1]
-- Long list: [1,2,3,4,5] -> [5,4,3,2,1]
-
-## 8. TEST CASES
+- **Empty list** (`[]`): curr starts as null → skip while loop → return prev (null) ✓
+- **Single node** (`[1]`): next = null, flip 1.next = null, prev = 1, curr = null → return 1 ✓
 
 ```typescript
 // Helper: make a linked list from array
@@ -161,7 +153,28 @@ console.log("Test 3:", toArray(reverseList(makeList([]))));            // []
 console.log("Test 4:", toArray(reverseList(makeList([1]))));           // [1]
 ```
 
-## 9. VARIATIONS
+## E - Evaluate（評価）
+
+**Time: O(n)**
+- "I visit each node once. n is the number of nodes."
+
+**Space: O(1)**
+- "I only use three pointers: prev, curr, next. No extra data structures."
+
+**Why this approach?**
+- Iterative is simple and uses O(1) space.
+- Recursive approach also works, but uses O(n) space for the call stack.
+
+**Trade-off:**
+| | Iterative | Recursive |
+|---|---|---|
+| Time | O(n) | O(n) |
+| Space | O(1) | O(n) |
+| Readability | Easy | A bit tricky |
+
+→ "Iterative is better for this problem because of O(1) space."
+
+## VARIATIONS
 
 ### Recursive approach
 
@@ -188,7 +201,7 @@ function reverseListRecursive(head: ListNode | null): ListNode | null {
 - Reverse only from position `left` to `right`.
 - Same idea, but you need to track the node before `left`.
 
-## 10. COMMON INTERVIEW QUESTIONS
+## COMMON INTERVIEW QUESTIONS
 
 **Q: Why do you need the `next` variable?**
 A: "If I flip `curr.next` to `prev` first, I lose the link to the rest of the list. So I save it in `next` first."
@@ -199,7 +212,7 @@ A: "The first node becomes the last node after reverse. The last node should poi
 **Q: Iterative or recursive - which is better?**
 A: "Iterative is better for this problem. It uses O(1) space. Recursive uses O(n) space for the call stack."
 
-## 13. HOW TO READ CODE ALOUD
+## HOW TO READ CODE ALOUD
 
 ```
 let prev = null          → "Let prev equal null"
@@ -216,7 +229,7 @@ return prev              → "Return prev"
 - O(n) → "O of n"
 - O(1) → "O of one" or "constant space"
 
-## 12. RELATED PROBLEMS
+## RELATED PROBLEMS
 
 - [92. Reverse Linked List II](https://leetcode.com/problems/reverse-linked-list-ii/) - Reverse part of a list
 - [234. Palindrome Linked List](https://leetcode.com/problems/palindrome-linked-list/) - Uses reverse to check palindrome

@@ -1,26 +1,78 @@
-# LeetCode 121. Best Time to Buy and Sell Stock
+# LeetCode 121. Best Time to Buy and Sell Stock (Easy)
 
 https://leetcode.com/problems/best-time-to-buy-and-sell-stock/
 
-## 1. PROBLEM UNDERSTANDING
+## U - Understand（問題の理解）
 
 - **What**: Find the maximum profit from buying and selling a stock once
 - **Input**: An array `prices` where `prices[i]` is the stock price on day `i`
 - **Output**: The maximum profit (or `0` if no profit is possible)
-- **Constraints**:
-  - 1 <= prices.length <= 10^5
-  - 0 <= prices[i] <= 10^4
-- **Key Insight**: We need to find the largest difference `prices[j] - prices[i]` where `j > i`. Using a sliding window, we track the minimum buy price seen so far and compute profit at each step.
 
-## 2. APPROACH (Interview Flow)
+**Clarifying Questions:**
+- "Can I buy and sell on the same day?" (No — sell must be after buy)
+- "Is there always a profit possible?" (No — return 0 if prices only go down)
+- "Can I make multiple transactions?" (No — just one buy and one sell)
 
-"First, let me clarify the problem. We need to buy on one day and sell on a later day to maximize profit. We can only make one transaction.
+**Constraints:**
+- 1 <= prices.length <= 10^5
+- 0 <= prices[i] <= 10^4
 
-A brute force approach would check every pair of buy and sell days — that's O(n²). But we can do better.
+**Test Cases:**
 
-I'll use a sliding window with two pointers. The left pointer represents the buy day and the right pointer represents the sell day. I scan from left to right. If the price at right is less than the price at left, I move left to right — because I found a cheaper buy price. Otherwise, I calculate the profit and update the maximum. This way, I always track the minimum buy price seen so far."
+1. **Happy Path**: `[7, 1, 5, 3, 6, 4]` → `5` (buy at 1, sell at 6)
+2. **Edge Case**: `[7, 6, 4, 3, 1]` → `0` (always going down, no profit)
+3. **Edge Case**: `[5]` → `0` (only one day, can't sell)
+4. **Constraint**: `[1, 2, 3, 4, 5]` → `4` (always going up, buy first sell last)
 
-## 3. SOLUTION
+## M - Match（パターンマッチ）
+
+**Pattern: Sliding Window (two pointers)**
+
+"I think we can use a sliding window with two pointers."
+
+Why this pattern?
+- We need to find the biggest difference `prices[j] - prices[i]` where `j > i`.
+- The left pointer is the buy day. The right pointer is the sell day.
+- Both pointers only move forward — this is a sliding window.
+- When we find a cheaper price, we move the buy day there.
+
+## P - Plan（プラン立て）
+
+"Let me think about the steps."
+
+"I use left as the buy day and right as the sell day. I scan from left to right."
+
+"For each right:
+1. If prices[right] < prices[left], I found a cheaper buy price. Move left to right.
+2. Otherwise, compute profit and update the max."
+
+"When right reaches the end, I return maxProfit."
+
+**Flowchart:**
+
+```mermaid
+flowchart TD
+    A[Start: left = 0, maxProfit = 0] --> B[For right from 1 to end]
+    B --> C{prices right < prices left?}
+    C -->|Yes| D[Found cheaper price\nleft = right] --> B
+    C -->|No| E[profit = prices right - prices left]
+    E --> F[maxProfit = max of maxProfit, profit] --> B
+    B --> G[Return maxProfit]
+```
+
+**Pseudocode:**
+```
+// set left = 0, maxProfit = 0
+// for right from 1 to end:
+//   if prices[right] < prices[left]:
+//     left = right (found cheaper buy price)
+//   else:
+//     profit = prices[right] - prices[left]
+//     maxProfit = max(maxProfit, profit)
+// return maxProfit
+```
+
+## I - Implement（実装）
 
 ```typescript
 function maxProfit(prices: number[]): number {
@@ -64,35 +116,11 @@ function maxProfitMinTrack(prices: number[]): number {
 }
 ```
 
-Same idea, just expressed differently. Both are O(n) time, O(1) space.
+Same idea, just written differently. Both are O(n) time, O(1) space.
 
-## 4. COMPLEXITY (Always Asked!)
+## R - Review（振り返り）
 
-**Time: O(n)**
-- "We iterate through the array once. Each element is visited exactly once."
-
-**Space: O(1)**
-- "We only use two variables: left pointer and maxProfit. No extra arrays or data structures."
-
-## 5. KEY PHRASES (Interview English)
-
-**Clarifying Questions:**
-- "Can I buy and sell on the same day?" (No — sell must be after buy)
-- "Is there always a profit possible?" (No — return 0 if prices only decrease)
-- "Can I make multiple transactions?" (No — just one buy and one sell)
-
-**Explaining Approach:**
-- "I'll use a sliding window approach with two pointers."
-- "The left pointer tracks the best buy day, and the right pointer scans for the best sell day."
-- "When I find a cheaper price, I move my buy day there, because any future sell will give more profit with a lower buy price."
-
-**Explaining Complexity:**
-- "Time is O of n because we scan the array once."
-- "Space is O of one because we only use a few variables."
-
-## 6. VISUAL WALKTHROUGH
-
-### Input: `prices = [7, 1, 5, 3, 6, 4]`
+"Let me walk through Test Case 1: `prices = [7, 1, 5, 3, 6, 4]`."
 
 ```
 Price chart:
@@ -106,24 +134,22 @@ Price chart:
 1 |     *
   +--+--+--+--+--+--+--
      0  1  2  3  4  5
-
-Step-by-step:
-
-  left  right  prices[L]  prices[R]  Action              maxProfit
-  ───────────────────────────────────────────────────────────────────
-  0     1      7          1          1 < 7 → move left    0
-  1     2      1          5          profit = 4           4
-  1     3      1          3          profit = 2           4
-  1     4      1          6          profit = 5           5 ✓
-  1     5      1          4          profit = 3           5
-
-Answer: 5 (buy at day 1, sell at day 4)
 ```
 
-### Input: `prices = [7, 6, 4, 3, 1]`
+| Step | left | right | prices[L] | prices[R] | Action | maxProfit |
+|------|------|-------|-----------|-----------|--------|-----------|
+| 1 | 0 | 1 | 7 | 1 | 1 < 7 → move left | 0 |
+| 2 | 1 | 2 | 1 | 5 | profit = 4 | **4** |
+| 3 | 1 | 3 | 1 | 3 | profit = 2 | 4 |
+| 4 | 1 | 4 | 1 | 6 | profit = 5 | **5** |
+| 5 | 1 | 5 | 1 | 4 | profit = 3 | 5 |
+
+**Answer: 5** (buy at day 1, sell at day 4) ✓
+
+"Let me also check the edge case: `prices = [7, 6, 4, 3, 1]`."
 
 ```
-Price chart (always decreasing):
+Price chart (always going down):
 
 7 |  *
 6 |     *
@@ -134,30 +160,22 @@ Price chart (always decreasing):
 1 |              *
   +--+--+--+--+--+--
      0  1  2  3  4
-
-Step-by-step:
-
-  left  right  prices[L]  prices[R]  Action              maxProfit
-  ───────────────────────────────────────────────────────────────────
-  0     1      7          6          6 < 7 → move left    0
-  1     2      6          4          4 < 6 → move left    0
-  2     3      4          3          3 < 4 → move left    0
-  3     4      3          1          1 < 3 → move left    0
-
-Answer: 0 (no profit possible — price always goes down)
 ```
 
-## 7. EDGE CASES
+| Step | left | right | prices[L] | prices[R] | Action | maxProfit |
+|------|------|-------|-----------|-----------|--------|-----------|
+| 1 | 0 | 1 | 7 | 6 | 6 < 7 → move left | 0 |
+| 2 | 1 | 2 | 6 | 4 | 4 < 6 → move left | 0 |
+| 3 | 2 | 3 | 4 | 3 | 3 < 4 → move left | 0 |
+| 4 | 3 | 4 | 3 | 1 | 1 < 3 → move left | 0 |
 
-- Only one day: `[5]` → 0 (can't sell)
-- Always decreasing: `[5, 4, 3, 2, 1]` → 0
-- Always increasing: `[1, 2, 3, 4, 5]` → 4 (buy first, sell last)
-- Same price every day: `[3, 3, 3]` → 0
-- Two elements, profit: `[1, 5]` → 4
-- Two elements, no profit: `[5, 1]` → 0
-- Min price in the middle: `[5, 1, 8]` → 7
+**Answer: 0** (no profit -- price always goes down) ✓
 
-## 8. TEST CASES
+"Let me check: single element `[5]`."
+- right starts at 1. Loop condition `1 < 1` is false. Skip loop. Return 0. ✓
+
+"And always going up: `[1, 2, 3, 4, 5]`."
+- left stays at 0 the whole time. Profit grows: 1, 2, 3, 4. Return 4. ✓
 
 ```typescript
 console.log(maxProfit([7, 1, 5, 3, 6, 4]) === 5,   "Test 1: buy at 1, sell at 6");
@@ -171,11 +189,32 @@ console.log(maxProfit([1, 5]) === 4,                   "Test 8: two elements pro
 console.log(maxProfit([5, 1]) === 0,                   "Test 9: two elements no profit");
 ```
 
-## 9. VARIATIONS
+## E - Evaluate（評価）
+
+**Time: O(n)**
+- "I go through the array once. Each element is visited exactly once."
+
+**Space: O(1)**
+- "I only use two variables: left pointer and maxProfit. No extra arrays or data structures."
+
+**Why this approach?**
+- Brute force checks every pair of buy/sell days — that is O(n squared).
+- Sliding window does it in one pass: O(n).
+- We only need O(1) space — no hash map or extra array needed.
+
+**Trade-off:**
+| | Brute Force | Sliding Window |
+|---|---|---|
+| Time | O(n²) | O(n) |
+| Space | O(1) | O(1) |
+
+"Sliding window is better because it has the same O(1) space but much better O(n) time."
+
+## VARIATIONS
 
 ### A. What if you can buy and sell multiple times?
 
-That's **LeetCode 122: Best Time to Buy and Sell Stock II**. The greedy approach: add up every price increase.
+That is **LeetCode 122: Best Time to Buy and Sell Stock II**. The greedy approach: add up every price increase.
 
 ```typescript
 function maxProfitMultiple(prices: number[]): number {
@@ -191,12 +230,12 @@ function maxProfitMultiple(prices: number[]): number {
 
 ### B. What if you can only buy and sell at most twice?
 
-That's **LeetCode 123: Best Time to Buy and Sell Stock III**. Use dynamic programming with states.
+That is **LeetCode 123: Best Time to Buy and Sell Stock III**. Use dynamic programming with states.
 
-## 10. WHEN TO USE WHICH
+## WHEN TO USE WHICH
 
 **Q: When should I think "sliding window"?**
-A: When you need to find an optimal subarray or subrange in a linear structure, and the window boundaries only move forward.
+A: When you need to find an optimal subarray or subrange, and the window boundaries only move forward.
 
 **Q: How is this different from a typical sliding window?**
 A: In a typical sliding window (like "max sum subarray of size k"), the window has a fixed or flexible size. Here, we don't care about the window size — we only care about the difference between the endpoints.
@@ -204,7 +243,7 @@ A: In a typical sliding window (like "max sum subarray of size k"), the window h
 **Q: Sliding window vs. tracking min price — which to use in an interview?**
 A: Both are correct. The sliding window version is more visual and easier to explain. The min-price version is more concise. Pick whichever you can explain more clearly.
 
-## 11. COMMON INTERVIEW QUESTIONS
+## COMMON INTERVIEW QUESTIONS
 
 **Q: Can you explain why moving left to right when we find a cheaper price is correct?**
 A: "If I find a cheaper buy price, any future sell price will give me equal or better profit compared to my old buy price. So there's no reason to keep the old buy price."
@@ -215,7 +254,7 @@ A: "That can't happen. The best profit always involves the lowest price before t
 **Q: Can this be solved with divide and conquer?**
 A: "Yes, you could split the array in half and find the max profit in the left half, right half, or crossing the midpoint. But that's O(n log n) — worse than the O(n) sliding window."
 
-## 12. RELATED PROBLEMS
+## RELATED PROBLEMS
 
 - LeetCode 122: Best Time to Buy and Sell Stock II (Medium) — Multiple transactions
 - LeetCode 123: Best Time to Buy and Sell Stock III (Hard) — At most 2 transactions
@@ -224,7 +263,7 @@ A: "Yes, you could split the array in half and find the max profit in the left h
 - LeetCode 714: Best Time to Buy and Sell Stock with Transaction Fee (Medium) — Fee per transaction
 - LeetCode 53: Maximum Subarray (Medium) — Similar "track running min/max" pattern
 
-## 13. HOW TO READ CODE ALOUD
+## HOW TO READ CODE ALOUD
 
 **Code Symbols:**
 - `prices[right]` → "prices at right" or "the price on the right day"

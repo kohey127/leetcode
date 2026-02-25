@@ -1,28 +1,76 @@
-# LeetCode 875. Koko Eating Bananas
+# LeetCode 875. Koko Eating Bananas (Medium)
 https://leetcode.com/problems/koko-eating-bananas/
 
-## 1. PROBLEM UNDERSTANDING
-- What: Find the slowest eating speed to finish all bananas in time
-- Input: piles (array of banana counts), h (hours we have)
-- Output: smallest speed k (bananas per hour)
-- Constraints:
-  - Each hour, Koko picks one pile and eats k bananas from it
-  - If a pile has less than k, she eats it all (still takes 1 hour)
-  - 1 <= piles.length <= 10^4, 1 <= piles[i] <= 10^9
-- Key insight: "find the smallest k" + big range = binary search on the answer
+## U - Understand（問題の理解）
 
-## 2. APPROACH (面接で話す流れ)
-"I need to find the smallest speed k.
- k can be from 1 to max(piles).
- That's a big range, so I'll use binary search."
+- **What**: Find the slowest eating speed to finish all bananas in time
+- **Input**: piles (array of banana counts), h (hours we have)
+- **Output**: smallest speed k (bananas per hour)
 
-"For each speed k, I check: can Koko finish in h hours?
- For each pile, she needs ceil(pile / k) hours.
- If total hours <= h, the speed is fast enough."
+**Clarifying Questions:**
+- "So she eats from only one pile per hour, right?"
+- "If a pile is smaller than k, she just eats it and waits?"
+
+**Constraints:**
+- Each hour, Koko picks one pile and eats k bananas from it
+- If a pile has less than k, she eats it all (still takes 1 hour)
+- 1 <= piles.length <= 10^4, 1 <= piles[i] <= 10^9
+
+**Test Cases:**
+
+1. **Happy Path**: `piles = [3, 6, 7, 11], h = 8` → `4`
+2. **Happy Path**: `piles = [30, 11, 23, 4, 20], h = 5` → `30`
+3. **Edge Case**: `piles = [10], h = 10` → `1` (one pile, eat 1 per hour)
+4. **Edge Case**: `piles = [1000000000], h = 2` → `500000000` (very big pile)
+5. **Constraint**: `piles = [3, 6, 7, 11], h = 4` → `11` (piles == hours, must eat biggest pile in 1 hour)
+
+## M - Match（パターンマッチ）
+
+**Pattern: Binary Search on Answer**
+
+"I think we can use binary search on the answer here."
+
+Why this pattern?
+- "find the smallest k" = we are searching for the best answer in a range.
+- The speed k can be from 1 to max(piles). That's a big range.
+- If speed k works, then k+1 also works. So the answer space is monotonic.
+- We can binary search to find the smallest k that works.
+
+## P - Plan（プラン立て）
+
+"I need to find the smallest speed k. k can be from 1 to max(piles). That's a big range, so I'll use binary search."
+
+"For each speed k, I check: can Koko finish in h hours? For each pile, she needs ceil(pile / k) hours. If total hours <= h, the speed is fast enough."
 
 "I use binary search to find the smallest k that works."
 
-## 3. SOLUTION
+**Flowchart:**
+
+```mermaid
+flowchart TD
+    A[Start: left = 1, right = max pile] --> B{left < right?}
+    B -->|No| F[Return left]
+    B -->|Yes| C[mid = floor of left+right / 2]
+    C --> D[Count total hours at speed mid]
+    D --> E{hours <= h?}
+    E -->|Yes| G[Fast enough, try slower\nright = mid] --> B
+    E -->|No| H[Too slow, go faster\nleft = mid + 1] --> B
+```
+
+**Pseudocode:**
+```
+// set left = 1, right = max(piles)
+// while left < right:
+//   mid = floor((left + right) / 2)
+//   count total hours at speed mid
+//   if total hours <= h:
+//     speed is enough, try slower → right = mid
+//   else:
+//     too slow, need faster → left = mid + 1
+// return left
+```
+
+## I - Implement（実装）
 
 ```typescript
 function minEatingSpeed(piles: number[], h: number): number {
@@ -53,66 +101,22 @@ function totalHours(piles: number[], k: number): number {
 }
 ```
 
-## 4. COMPLEXITY (必ず聞かれる)
-- Time: O(n * log m)
-  - n = number of piles, m = max pile size
-  - "Binary search runs log m times. Each time, I check all n piles."
-- Space: O(1) - "Just a few variables."
+## R - Review（振り返り）
 
-## 5. KEY PHRASES (面接で使える英語)
+"Let me walk through Test Case 1: `piles = [3, 6, 7, 11], h = 8`."
 
-Clarifying:
-- "So she eats from only one pile per hour, right?"
-- "If a pile is smaller than k, she just eats it and waits?"
+| Step | left | right | mid | Hours at mid | Action | Result |
+|------|------|-------|-----|-------------|--------|--------|
+| 1 | 1 | 11 | 6 | 6 | 6 <= 8 → try slower | right = **6** |
+| 2 | 1 | 6 | 3 | 10 | 10 > 8 → too slow | left = **4** |
+| 3 | 4 | 6 | 5 | 8 | 8 <= 8 → try slower | right = **5** |
+| 4 | 4 | 5 | 4 | 8 | 8 <= 8 → try slower | right = **4** |
+| - | 4 | 4 | - | - | left === right → done | ans = **4** |
 
-Explaining:
-- "I'll binary search on the speed, not on the array."
-- "The speed goes from 1 to the biggest pile."
-- "For each speed, I check if she can finish in time."
-- "I use ceil of pile divided by k to get hours for each pile."
+"Let me also check the edge cases."
 
-Complexity:
-- "Time is O of n log m. Log m for binary search, n to check each pile."
-- "Space is O of one."
-
-## 6. VISUAL WALKTHROUGH
-
-piles = [3, 6, 7, 11], h = 8
-
-```
-Binary search: left=1, right=11
-
-Step 1: mid=6
-  pile 3  → ceil(3/6)  = 1 hour
-  pile 6  → ceil(6/6)  = 1 hour
-  pile 7  → ceil(7/6)  = 2 hours
-  pile 11 → ceil(11/6) = 2 hours
-  total = 6 hours <= 8 ✓ → try slower, right = 6
-
-Step 2: mid=3
-  pile 3  → ceil(3/3)  = 1 hour
-  pile 6  → ceil(6/3)  = 2 hours
-  pile 7  → ceil(7/3)  = 3 hours
-  pile 11 → ceil(11/3) = 4 hours
-  total = 10 hours > 8 ✗ → too slow, left = 4
-
-Step 3: mid=5
-  pile 3 → 1, pile 6 → 2, pile 7 → 2, pile 11 → 3
-  total = 8 hours <= 8 ✓ → try slower, right = 5
-
-Step 4: mid=4
-  pile 3 → 1, pile 6 → 2, pile 7 → 2, pile 11 → 3
-  total = 8 hours <= 8 ✓ → try slower, right = 4
-
-left=4, right=4 → done! answer = 4
-```
-
-## 7. EDGE CASES
-- One pile: [10], h=10 → 1 (eat 1 per hour)
-- Piles == hours: [3,6,7,11], h=4 → 11 (must eat biggest pile in 1 hour)
-- Very big pile: [1000000000], h=2 → 500000000
-
-## 8. TEST CASES
+- **One pile** (`[10], h=10`): left=1, right=10. Binary search narrows down to k=1. At speed 1, total = ceil(10/1) = 10 hours = h. Correct.
+- **Piles == hours** (`[3,6,7,11], h=4`): Must eat each pile in 1 hour. Needs speed = max pile = 11. Correct.
 
 ```typescript
 console.log(minEatingSpeed([3, 6, 7, 11], 8));           // Expected: 4
@@ -122,7 +126,29 @@ console.log(minEatingSpeed([10], 10));                    // Expected: 1
 console.log(minEatingSpeed([3, 6, 7, 11], 4));           // Expected: 11
 ```
 
-## 9. VARIATIONS (バリエーション)
+## E - Evaluate（評価）
+
+**Time: O(n * log m)**
+- n = number of piles, m = max pile size
+- "Time is O(n log m). Binary search runs log m times. Each time, I check all n piles."
+
+**Space: O(1)**
+- "Space is O(1). Just a few variables."
+
+**Why this approach?**
+- The answer space (1 to max pile) is monotonic: if speed k works, k+1 also works.
+- Binary search on a monotonic space is the best way to find a boundary.
+- Brute force would try every speed from 1 to max — that's O(m * n). Binary search makes it O(n * log m).
+
+**Trade-off:**
+| | Brute Force | Binary Search |
+|---|---|---|
+| Time | O(n * m) | O(n * log m) |
+| Space | O(1) | O(1) |
+
+→ "Binary search is much faster. For m = 10^9, log m is about 30. That's huge savings."
+
+## VARIATIONS
 
 この問題は「答えに対する二分探索 (Binary Search on Answer)」パターン。
 
@@ -136,7 +162,7 @@ console.log(minEatingSpeed([3, 6, 7, 11], 4));           // Expected: 11
 - Big range of possible answers (1 to 10^9)
 - Easy to check: "given this answer, does it work?"
 
-## 10. WHEN TO USE WHICH (使い分け)
+## WHEN TO USE WHICH
 
 Q: "How do I know this is binary search?"
 A: "Two clues:
@@ -149,7 +175,7 @@ A: "Normal: search in an array for a target.
     This: search in a range of numbers (1 to max) for the best answer.
     But the idea is the same - cut in half each time."
 
-## 11. COMMON INTERVIEW QUESTIONS
+## COMMON INTERVIEW QUESTIONS
 
 Q: "Why use ceil(pile / k)?"
 A: "If pile is 7 and speed is 4, she needs 2 hours.
@@ -162,13 +188,13 @@ Q: "Why while (left < right), not left <= right?"
 A: "I want to find a boundary, not an exact match.
     When left meets right, that's my answer."
 
-## 12. RELATED PROBLEMS
+## RELATED PROBLEMS
 - LeetCode 704: Binary Search (basic)
 - LeetCode 1011: Capacity To Ship Packages (same pattern)
 - LeetCode 410: Split Array Largest Sum (same pattern)
 - LeetCode 69: Sqrt(x) (binary search on answer)
 
-## 13. HOW TO READ CODE ALOUD (口頭での読み方)
+## HOW TO READ CODE ALOUD
 
 ### コードの読み方
 | Code | Say This |

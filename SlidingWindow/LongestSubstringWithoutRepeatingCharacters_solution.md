@@ -1,26 +1,78 @@
-# LeetCode 3. Longest Substring Without Repeating Characters
+# LeetCode 3. Longest Substring Without Repeating Characters (Medium)
 
 https://leetcode.com/problems/longest-substring-without-repeating-characters/
 
-## 1. PROBLEM UNDERSTANDING
+## U - Understand（問題の理解）
 
-- **What**: Find the length of the longest substring (consecutive characters) with no duplicate characters
+- **What**: Find the length of the longest substring with no duplicate characters
 - **Input**: A string `s`
 - **Output**: The length of the longest substring without repeating characters
-- **Constraints**:
-  - 0 <= s.length <= 5 * 10^4
-  - s consists of English letters, digits, symbols, and spaces
-- **Key Insight**: Use a sliding window that expands to the right. When a duplicate is found, shrink the window from the left until there are no duplicates. Use a Set to track characters in the current window.
 
-## 2. APPROACH (Interview Flow)
+**Clarifying Questions:**
+- "Just to confirm, we need a substring, not a subsequence — the characters must be next to each other?"
+- "What characters can the string contain? Just lowercase letters, or any ASCII?"
+- "What should I return for an empty string?" (return 0)
 
-"First, let me clarify — we need a substring, not a subsequence. A substring must be consecutive characters.
+**Constraints:**
+- 0 <= s.length <= 5 * 10^4
+- s has English letters, digits, symbols, and spaces
 
-A brute force approach would check every possible substring and verify if it has all unique characters — that's O(n³). We can optimize to O(n²) by using a Set for each starting position.
+**Test Cases:**
 
-But the optimal approach is a sliding window with a Set. I maintain a window [left, right]. I expand right one step at a time. If the new character is already in the window, I shrink from the left by removing characters until there's no duplicate. The Set tracks what's currently in the window. At each step, I update the maximum length."
+1. **Happy Path**: `"abcabcbb"` → `3` (the answer is "abc")
+2. **Edge Case**: `""` → `0` (empty string)
+3. **Edge Case**: `"bbbbb"` → `1` (all same characters)
+4. **Constraint**: `"abcd"` → `4` (all unique, answer is the whole string)
+5. **Edge Case**: `"dvdf"` → `3` (the answer is "vdf", tricky overlap)
 
-## 3. SOLUTION
+## M - Match（パターンマッチ）
+
+**Pattern: Sliding Window with Set**
+
+"I think we can use a sliding window with a Set to track characters in the window."
+
+Why this pattern?
+- We need the longest substring with a constraint (no duplicates).
+- A sliding window works well for "longest/shortest subarray/substring" problems.
+- The Set tells us if a character is already in the window in O(1).
+- Both pointers only move forward — classic sliding window.
+
+## P - Plan（プラン立て）
+
+"Let me think about the steps."
+
+"I keep a window [left, right]. I grow the window to the right one character at a time."
+
+"For each new character:
+1. If it is already in the Set, I shrink the window from the left. I remove characters from the Set until the duplicate is gone.
+2. Then I add the new character to the Set.
+3. I update maxLen with the current window size."
+
+**Flowchart:**
+
+```mermaid
+flowchart TD
+    A[Start: left = 0, maxLen = 0] --> B[For right from 0 to end]
+    B --> C{s right in Set?}
+    C -->|Yes| D[Remove s left from Set\nleft++] --> C
+    C -->|No| E[Add s right to Set]
+    E --> F[maxLen = max of maxLen, right-left+1] --> B
+    B --> G[Return maxLen]
+```
+
+**Pseudocode:**
+```
+// create empty Set, left = 0, maxLen = 0
+// for right from 0 to end:
+//   while Set has s[right]:
+//     remove s[left] from Set
+//     left++
+//   add s[right] to Set
+//   maxLen = max(maxLen, right - left + 1)
+// return maxLen
+```
+
+## I - Implement（実装）
 
 ```typescript
 function lengthOfLongestSubstring(s: string): number {
@@ -65,122 +117,48 @@ function lengthOfLongestSubstringMap(s: string): number {
 }
 ```
 
-## 4. COMPLEXITY (Always Asked!)
+## R - Review（振り返り）
 
-### Set Approach
+"Let me walk through Test Case 1: `s = 'abcabcbb'`."
 
-**Time: O(n)**
-- "Each character is added to the Set once and removed at most once. So both pointers together traverse the string at most 2n times — still O(n)."
+| Step | right | char | Duplicate? | Action | Window | Set | maxLen |
+|------|-------|------|-----------|--------|--------|-----|--------|
+| 1 | 0 | a | No | add 'a' | [a] | {a} | **1** |
+| 2 | 1 | b | No | add 'b' | [a,b] | {a,b} | **2** |
+| 3 | 2 | c | No | add 'c' | [a,b,c] | {a,b,c} | **3** |
+| 4 | 3 | a | Yes | remove 'a', left=1 | [b,c,a] | {b,c,a} | 3 |
+| 5 | 4 | b | Yes | remove 'b', left=2 | [c,a,b] | {c,a,b} | 3 |
+| 6 | 5 | c | Yes | remove 'c', left=3 | [a,b,c] | {a,b,c} | 3 |
+| 7 | 6 | b | Yes | remove 'a','b', left=5 | [c,b] | {c,b} | 3 |
+| 8 | 7 | b | Yes | remove 'c','b', left=7 | [b] | {b} | 3 |
 
-**Space: O(min(n, m))** where m is the size of the character set
-- "The Set stores at most min(n, 128) characters for ASCII, or min(n, 26) for lowercase letters only."
+**Answer: 3** ("abc") ✓
 
-### Map Approach
+"Let me also check Test Case 3: `s = 'bbbbb'`."
 
-**Time: O(n)**
-- "Single pass. No inner while loop — we jump left directly."
+| Step | right | char | Duplicate? | Action | Window | maxLen |
+|------|-------|------|-----------|--------|--------|--------|
+| 1 | 0 | b | No | add 'b' | [b] | **1** |
+| 2 | 1 | b | Yes | remove 'b', left=1, add 'b' | [b] | 1 |
+| 3 | 2 | b | Yes | remove 'b', left=2, add 'b' | [b] | 1 |
+| 4 | 3 | b | Yes | remove 'b', left=3, add 'b' | [b] | 1 |
+| 5 | 4 | b | Yes | remove 'b', left=4, add 'b' | [b] | 1 |
 
-**Space: O(min(n, m))**
-- "Same as Set approach."
+**Answer: 1** ✓
 
-## 5. KEY PHRASES (Interview English)
+"And the empty string `''`."
+- right starts at 0. Loop condition `0 < 0` is false. Skip loop. Return 0. ✓
 
-**Clarifying Questions:**
-- "Just to confirm, we need a substring, not a subsequence — meaning the characters must be consecutive?"
-- "What characters can the string contain? Just lowercase letters, or any ASCII?"
-- "What should I return for an empty string?" (return 0)
+"And the tricky case `'dvdf'`."
 
-**Explaining Approach:**
-- "I'll use a sliding window with a Set to track the characters in the current window."
-- "I expand the window to the right one character at a time."
-- "When I find a duplicate, I shrink the window from the left until the duplicate is removed."
-- "At each step, I update the maximum window size."
+| Step | right | char | Duplicate? | Action | Window | maxLen |
+|------|-------|------|-----------|--------|--------|--------|
+| 1 | 0 | d | No | add 'd' | [d] | **1** |
+| 2 | 1 | v | No | add 'v' | [d,v] | **2** |
+| 3 | 2 | d | Yes | remove 'd', left=1, add 'd' | [v,d] | 2 |
+| 4 | 3 | f | No | add 'f' | [v,d,f] | **3** |
 
-**Explaining Complexity:**
-- "Time is O of n because each character enters and leaves the Set at most once."
-- "Space is O of min n m, where m is the character set size."
-
-## 6. VISUAL WALKTHROUGH
-
-### Input: `s = "abcabcbb"`
-
-```
-窓の動き:
-
-Step 1: right=0  'a'
-        [a] b c a b c b b
-         L
-         R
-        Set: {a}       maxLen = 1
-
-Step 2: right=1  'b'
-        [a b] c a b c b b
-         L R
-        Set: {a,b}     maxLen = 2
-
-Step 3: right=2  'c'
-        [a b c] a b c b b
-         L   R
-        Set: {a,b,c}   maxLen = 3
-
-Step 4: right=3  'a'  ← 重複！ 'a' はSetにある
-        Setから 'a' を消して left++ →
-         a [b c a] b c b b
-            L   R
-        Set: {b,c,a}   maxLen = 3
-
-Step 5: right=4  'b'  ← 重複！ 'b' はSetにある
-        Setから 'b' を消して left++ →
-         a  b [c a b] c b b
-               L   R
-        Set: {c,a,b}   maxLen = 3
-
-Step 6: right=5  'c'  ← 重複！ 'c' はSetにある
-        Setから 'c' を消して left++ →
-         a  b  c [a b c] b b
-                  L   R
-        Set: {a,b,c}   maxLen = 3
-
-Step 7: right=6  'b'  ← 重複！ 'b' はSetにある
-        Setから 'a' を消して left++ → まだ 'b' ある
-        Setから 'b' を消して left++ →
-         a  b  c  a  b [c b] b
-                        L  R
-        Set: {c,b}     maxLen = 3
-
-Step 8: right=7  'b'  ← 重複！
-        Setから 'c' を消して left++ →
-        Setから 'b' を消して left++ →
-         a  b  c  a  b  c  b [b]
-                               LR
-        Set: {b}       maxLen = 3
-
-答え: 3 ("abc")
-```
-
-### Input: `s = "bbbbb"`
-
-```
-Step 1: [b] → Set: {b}              maxLen = 1
-Step 2: 'b' 重複 → left++, [b] →    maxLen = 1
-Step 3: 'b' 重複 → left++, [b] →    maxLen = 1
-Step 4: 'b' 重複 → left++, [b] →    maxLen = 1
-Step 5: 'b' 重複 → left++, [b] →    maxLen = 1
-
-答え: 1
-```
-
-## 7. EDGE CASES
-
-- Empty string: `""` → 0
-- Single character: `"a"` → 1
-- All same characters: `"aaaa"` → 1
-- All unique characters: `"abcd"` → 4
-- Spaces: `" "` → 1
-- Duplicate at end: `"abca"` → 3
-- String with digits and symbols: `"a1!a"` → 3
-
-## 8. TEST CASES
+**Answer: 3** ("vdf") ✓
 
 ```typescript
 console.log(lengthOfLongestSubstring("abcabcbb") === 3,  "Test 1: abc");
@@ -194,11 +172,43 @@ console.log(lengthOfLongestSubstring("dvdf") === 3,       "Test 8: vdf");
 console.log(lengthOfLongestSubstring("abba") === 2,       "Test 9: ab or ba");
 ```
 
-## 9. VARIATIONS
+## E - Evaluate（評価）
 
-### A. Set vs Map — 窓の縮め方の違い
+### Set Approach
 
-**Set approach**: 重複が消えるまで left を1つずつ進める（while ループ）
+**Time: O(n)**
+- "Each character is added to the Set once and removed at most once. So both pointers together go through the string at most 2n times — still O(n)."
+
+**Space: O(min(n, m))** where m is the size of the character set
+- "The Set stores at most min(n, 128) characters for ASCII, or min(n, 26) for lowercase letters only."
+
+### Map Approach
+
+**Time: O(n)**
+- "Single pass. No inner while loop — we jump left directly."
+
+**Space: O(min(n, m))**
+- "Same as Set approach."
+
+**Why this approach?**
+- Brute force checks every substring — that is O(n cubed) or O(n squared) with a Set.
+- Sliding window does it in O(n) with one pass.
+- Set approach is easier to understand. Map approach is a bit faster.
+
+**Trade-off:**
+| | Set | Map |
+|---|---|---|
+| Time | O(n) (up to 2n ops) | O(n) (exactly n ops) |
+| Space | O(min(n, m)) | O(min(n, m)) |
+| Simplicity | Easier to write | A bit more code |
+
+"Both work in an interview. I prefer Set because it is simpler to explain."
+
+## VARIATIONS
+
+### A. Set vs Map — how the window shrinks
+
+**Set approach**: Remove characters one by one from left until the duplicate is gone (while loop).
 
 ```typescript
 while (seen.has(s[right])) {
@@ -207,7 +217,7 @@ while (seen.has(s[right])) {
 }
 ```
 
-**Map approach**: 前回出現した位置を記録して、left を一気にジャンプ
+**Map approach**: Record where each character was last seen. Jump left in one step.
 
 ```typescript
 if (lastIndex.has(s[right]) && lastIndex.get(s[right])! >= left) {
@@ -215,7 +225,7 @@ if (lastIndex.has(s[right]) && lastIndex.get(s[right])! >= left) {
 }
 ```
 
-Map の方が定数倍速いが、面接ではどちらでもOK。
+Map is faster by a constant factor, but both are O(n). Either is fine in an interview.
 
 ### B. Return the actual substring (not just length)
 
@@ -242,7 +252,7 @@ function longestSubstring(s: string): string {
 }
 ```
 
-## 10. WHEN TO USE WHICH
+## WHEN TO USE WHICH
 
 **Q: When should I think "sliding window with Set/Map"?**
 A: When the problem asks for a longest/shortest subarray or substring with a constraint on unique elements or character frequency.
@@ -253,7 +263,7 @@ A: In the stock problem, the window only shrinks by jumping left to right. Here,
 **Q: Set vs Map — when to use which?**
 A: Use Set when you only care about "is this character in the window?" Use Map when you need to know "where was this character last seen?" — the Map lets you skip the inner while loop.
 
-## 11. COMMON INTERVIEW QUESTIONS
+## COMMON INTERVIEW QUESTIONS
 
 **Q: Why does each character enter and leave the Set at most once?**
 A: "The left pointer only moves right, never left. Each character is added when right reaches it and removed when left passes it. So each character has at most one add and one delete — total 2n operations."
@@ -262,9 +272,9 @@ A: "The left pointer only moves right, never left. Each character is added when 
 A: "Yes, I could use an array of size 128 (for ASCII) as a frequency map. The logic is the same, but array access is faster than Set operations."
 
 **Q: What if we need the longest substring with at most K distinct characters?**
-A: "Similar sliding window, but instead of a Set, I'd use a Map to count character frequencies. I shrink the window when the Map size exceeds K. That's LeetCode 340."
+A: "Similar sliding window, but instead of a Set, I'd use a Map to count character frequencies. I shrink the window when the Map size goes over K. That's LeetCode 340."
 
-## 12. RELATED PROBLEMS
+## RELATED PROBLEMS
 
 - LeetCode 340: Longest Substring with At Most K Distinct Characters (Medium)
 - LeetCode 76: Minimum Window Substring (Hard)
@@ -273,7 +283,7 @@ A: "Similar sliding window, but instead of a Set, I'd use a Map to count charact
 - LeetCode 209: Minimum Size Subarray Sum (Medium)
 - LeetCode 424: Longest Repeating Character Replacement (Medium)
 
-## 13. HOW TO READ CODE ALOUD
+## HOW TO READ CODE ALOUD
 
 **Code Symbols:**
 - `new Set<string>()` → "a new Set of strings"
