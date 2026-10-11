@@ -31,6 +31,9 @@ class ListNode {
     }
 }
 
+// 1→2→3
+// 3→2→1
+
 function reverseList(head: ListNode | null): ListNode | null {
     let prev: ListNode | null = null;
     let cur: ListNode | null = head;
