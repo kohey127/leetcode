@@ -14,6 +14,25 @@
 | 🚶 | **O(n log n)** | 線形対数時間 | 全部を分割しながら処理 |
 | 🐢 | **O(n²)** | 二乗時間 | 全ペアをチェック |
 
+### 線グラフで見る
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="assets/time-complexity-dark.svg">
+  <img alt="n が増えたときの作業回数の線グラフ。縦横の縮尺は同じ。O(1) と O(log n) はほぼ床、O(n) はちょうど45度の斜め線、O(n log n) は n = 38 くらいで、O(n²) は n = 14 くらいで 200 を超える" src="assets/time-complexity-light.svg" width="614">
+</picture>
+
+縦と横の縮尺は同じ（0〜200）。だから O(n) がちょうど45°の斜め線になり、これより上か下かで速さが分かる。
+
+| 計算量 | グラフの形 | 代表アルゴリズム・操作 | このリポジトリの問題 |
+|---|---|---|---|
+| **O(1)** | 床に平ら | `arr[i]`、`Map.get` / `Set.has`、`push` / `pop` | Min Stack（`getMin`） |
+| **O(log n)** | 45°よりずっと下。n = 200 でも約8回 | Binary Search、Heap の出し入れ（1回分） | Binary Search、Find Minimum in Rotated Sorted Array |
+| **O(n)** | ちょうど45°。n が2倍なら回数も2倍 | ループ1回、Hash Map、Sliding Window、Two Pointers、木の DFS / BFS | Two Sum、Best Time to Buy and Sell Stock、Valid Palindrome、Daily Temperatures、Reverse Linked List、Maximum Depth of Binary Tree |
+| **O(n log n)** | 45°より上。n = 38 くらいで 200 回を超える | **sort**（`arr.sort()`、Merge Sort）、Heap に n 個入れて出す | Last Stone Weight |
+| **O(n²)** | ほぼ垂直。n = 14 くらいで、もう 200 回 | 二重ループ（全ペアを調べる） | Two Sum の Brute Force、3Sum（sort + Two Pointers） |
+
+> グラフは `node assets/time-complexity-chart.mjs` で作り直せる（追加のモジュールは不要）
+
 ### 具体的な数値で比較
 
 | 計算量 | イメージ | n=10 | n=100 | n=1000 | n=10000 |
